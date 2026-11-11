@@ -1,0 +1,29 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Syntax check (JS run inside use_figma is wrapped as an async function body)
+        run: |
+          for f in $(find skills tests -name '*.js' -o -name '*.cjs'); do
+            node --check "$f" 2>/dev/null || { printf '(async()=>{\n%s\n})' "$(cat "$f")" > /tmp/check.js; node --check /tmp/check.js; } || { echo "syntax error: $f"; exit 1; }
+          done
+          python -m py_compile $(find skills -name '*.py')
+          for f in $(find . -name '*.json' -not -path './node_modules/*'); do python -m json.tool "$f" > /dev/null || { echo "bad json: $f"; exit 1; }; done
+      - run: npm test

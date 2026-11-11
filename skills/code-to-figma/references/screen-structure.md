@@ -1,0 +1,14 @@
+# Product screen structure
+
+Product screens in Figma must be ready for a designer to take over and edit directly. Whether a screen is copied from a design file or rebuilt from code, it must meet these rules; audit checks them. W is the product viewport width.
+
+- **Two screen heights**: viewport (one viewport tall, fixed elements in the right position) and full page (to the end of the content). The list must state which one each screen is; write the product's actual scroll behavior in the description
+- **The screen root frame width is fixed = W** (Fixed, never Hug). When the root frame is Hug, a single child wider than W (e.g. a horizontally scrolling carousel) stretches the whole screen wider, the card's W then clips it, and the whole content shifts to one side.
+- **Every container whose children are arranged uses Auto Layout**: direction, gap, padding and alignment follow the product. Use absolute position only when content truly overlaps (overlays, badges, content mid-scroll), and keep it inside an Auto Layout parent.
+- **No Groups**. A `<g>` from an SVG import becomes a Group and must be ungrouped (`figma.ungroup`); when you need a container, use a frame.
+- **Make repeated UI into components**: components in the code, list items, buttons and icons all become components, and screens use instances; different states of the same component use variants (e.g. an option's default/selected/locked). Keep the components together in a separate section in the same file, "<screen section name> · Components", not inside the screen frames.
+- **Horizontal scroll, carousels**: the container width is Fixed or Fill, with clip content on, so the content can overflow; the container itself must not be Hug.
+- **Text that can grow**: put it in Auto Layout with Fill width + auto height (textAutoResize HEIGHT) so it wraps; do not use single-line Hug, which gets clipped when it runs past the screen. Use Hug only for short single-line labels.
+- **Single-line text height follows the product**: when rebuilding from code, set the line height of single-line text to the height measured in the browser; otherwise Figma's text box is taller, stretches the Hug parent, and the whole row shifts out of place.
+- **Reference screenshot layer** (when rebuilding from code, required on each device's representative screen): inside the representative screen's root frame, add a hidden, locked bitmap screenshot layer named "Reference screenshot (browser)", the same size as the editable layers, so the designer can toggle it to compare. Do not add it to the other cards; hidden layers still use memory. This layer is only for comparison and cannot replace the editable layers.
+- When the product font can't load in the Figma runtime (e.g. Arial), the API can't change the size or content of that text; report layout breaks in such text to the designer, to fix manually in local Figma.

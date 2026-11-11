@@ -1,0 +1,15 @@
+node_modules/
+.DS_Store
+
+# capture / build outputs from running the skills in a project work folder
+capture/
+pack/
+figma/
+figma2/
+urls.txt
+*.diff.png
+worst.png
+
+# API fixtures may contain real user data: commit only the README
+skills/code-to-figma/examples/api-intercept/fixtures/*
+!skills/code-to-figma/examples/api-intercept/fixtures/README.md

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Code to Figma"
+  short_description: "Rebuild a running web page as editable Figma Auto Layout and components"
+  default_prompt: "Use $code-to-figma to rebuild this screen from the project code into Figma, then diff it against the browser screenshot."

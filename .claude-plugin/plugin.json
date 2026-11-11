@@ -1,0 +1,28 @@
+{
+  "name": "figma-state-board",
+  "version": "0.7.0",
+  "description": "Figma toolkit for product projects: inventory every state of a feature, rebuild running web screens as editable Auto Layout and components, bind them to a design system, and assemble a state board that flags missing error, empty and loading screens.",
+  "author": {
+    "name": "Dilly Chen"
+  },
+  "keywords": [
+    "figma",
+    "figma-mcp",
+    "code-to-figma",
+    "state-board",
+    "design-handoff",
+    "design-qa",
+    "edge-cases",
+    "empty-state",
+    "error-state",
+    "auto-layout",
+    "react",
+    "nextjs",
+    "vue",
+    "情境稿"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/byby325/figma-state-board",
+  "repository": "https://github.com/byby325/figma-state-board",
+  "icon": "assets/icon.png"
+}

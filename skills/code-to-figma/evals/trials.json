@@ -1,0 +1,152 @@
+{
+  "skill": "code-to-figma",
+  "note": "Every time you change al-extract.js or al-build.js, rerun all cases, not just one: a change often breaks only one kind of project (while wrapping up 0.3.0, the pseudo-element ordering fix broke only Project C). expected_behavior is the acceptance criteria, judged by a person; baseline is the result of the 0.4.0 one-screen-at-a-time rebuild, not a ceiling. Marquees, carousels and fade-in animations make the diff fluctuate by about 0.3%. When sending to Figma, follow the code-to-figma hard rules: one screen at a time.",
+  "evals": [
+    {
+      "id": "vue-spa-mobile",
+      "project": "Project A prototype (Vue 3, SCSS, mobile 360 wide)",
+      "query": "Bring this prototype's cart state screens into Figma and bind them to the project's design system",
+      "expected_behavior": [
+        "The layout tree picks up Vue components; framework in stats.json is vue3",
+        "al-diff median is below 1%",
+        "audit-screens.js reports no structural issues",
+        "Library icon colors are correct; semi-transparent colors did not become opaque"
+      ],
+      "baseline": {
+        "screens": 5,
+        "diffPercent": [
+          0.12,
+          0.3,
+          0.32,
+          0.61,
+          0.67
+        ],
+        "colorBinding": 0.54
+      }
+    },
+    {
+      "id": "tailwind-image-heavy",
+      "project": "Project B (Vue 3, Tailwind, MSW; desktop 1280, mobile 360, full page)",
+      "query": "Bring the home page and the promotions page into Figma, including desktop full page and mobile",
+      "expected_behavior": [
+        "Layer names are not Tailwind utility classes",
+        "Images are split into separate files for upload; full-page data SVGs are under 2MB; no images are missing",
+        "The stacking order of product card images, sheen and badges matches the browser",
+        "Progress bar lengths and line-clamp match the browser",
+        "Swiper is not made into a component"
+      ],
+      "baseline": {
+        "screens": 4,
+        "diffPercent": [
+          0.57,
+          1.1,
+          1.9,
+          1.93
+        ],
+        "colorBinding": 0.91,
+        "note": "The marquee content is random data that MSW generates in a service worker, so it differs on every recapture and the L01 and L02 diffs fluctuate. The ticker-content frame offset in the audit comes from the marquee content width; it is a known limitation"
+      }
+    },
+    {
+      "id": "fixture-mock-desktop",
+      "project": "Project C (Vue 3, SCSS, Playwright fixture mock; desktop 1280)",
+      "query": "Bring the compact list and full list states of the order history into Figma",
+      "expected_behavior": [
+        "States are set up with the project's e2e fixtures and pages, without changing the repo",
+        "The sticky nav bar is above the content",
+        "Icons have no black square background; checkboxes have the box and the check mark",
+        "The font size of labels with transform: scale() matches the browser",
+        "The table header's dark background is intact, table lines are 1px, and the tabs' small triangles and the checkbox check marks look the same as in the browser"
+      ],
+      "baseline": {
+        "screens": 4,
+        "diffPercent": [
+          0.12,
+          0.13,
+          1.22,
+          1.5
+        ],
+        "colorBinding": 0.97
+      }
+    },
+    {
+      "id": "nuxt-ssr-fullpage",
+      "project": "Project D (Nuxt 4, Tailwind, SCSS, mock upstream; desktop 1920, mobile 360, full page)",
+      "query": "Bring the home page and the category page into Figma, full page on both desktop and mobile",
+      "expected_behavior": [
+        "Components are captured in dev mode; the repo is unchanged; the .nuxt cache the run created has been cleared",
+        "image-set backgrounds and video frames are both present",
+        "Scrolling lists have a fixed height and are clipped",
+        "When the same component has different layout directions on mobile and desktop, each becomes its own variant",
+        "The icon CDN is allowed; stats.json has no empty-icon warning; icon colors match the browser",
+        "Truncated product names don't push the price in the same row out of the card; the two footer columns and the description area have no fixed offset",
+        "SVG background images are scaled proportionally inside their box, and glows look the same as in the browser"
+      ],
+      "baseline": {
+        "screens": 4,
+        "diffPercent": [
+          0.28,
+          1.66,
+          1.81,
+          3.6
+        ],
+        "colorBinding": 0.66,
+        "note": "With the CDN allowed, icons actually load, and the vector colors of multicolor icons are not in the tokens (none matches a token exactly), so the binding ratio is lower than 0.3.0's 0.86. L01 was 28.96% and is 0.28% after fixing SVG background image scaling and the drop-shadow glow; Project D does not use mask-image. The swiper-wrapper frame offset in the audit comes from the carousel track width; it is a known limitation"
+      }
+    },
+    {
+      "id": "vue-oklch-api-intercept",
+      "project": "Project E (Vue 3, frappe-ui, Tailwind, oklch palette, CSS mask icons; all data comes from backend APIs; desktop 1280, full page)",
+      "query": "Make a state board of every state of the to-do page: loading, load failed, no permission, and the three roles employee/manager/HR",
+      "expected_behavior": [
+        "States are set up by intercepting backend APIs (the examples/api-intercept approach), without signing in or changing the repo; setup returns different data per card ID, so changing the capture order doesn't change the result",
+        "All colors are extracted: backgrounds, borders, badge backgrounds and text colors; the color stats returned by __alBuild are not empty",
+        "lucide-* icons are vectors colored with the background color, not solid color blocks",
+        "The error state shows the message from the backend, not an \"Internal Server Error\" filled in by the framework",
+        "Text offsets caused by tabular numbers (tabular-nums) are within 8px, and the report explains why"
+      ],
+      "baseline": {
+        "screens": 15,
+        "diffPercent": [
+          1.03
+        ],
+        "colorBinding": null,
+        "note": "0.5.0 trial run: all 15 screens were captured and 13 were built in Figma; only the representative screen E01 was compared (1.03%; 2.03% before the fix, when the whole screen had no color). Comparison and audit for the other screens are not done yet because the Figma MCP call limit was reached; fill in diffPercent next time. There is no design system library, so colorBinding does not apply. M01–M03 have 16–31 log.drift entries, concentrated in tabular-nums date badges (about 6px)"
+      }
+    },
+    {
+      "id": "react-vite-radix-tailwind4",
+      "project": "Project F (React 19, Vite, Radix/shadcn-style Button, Tooltip and DropdownMenu, lucide-react, Tailwind 4 oklch palette; data comes from /api/orders; desktop 1024)",
+      "query": "Bring the four states of the order list into Figma: with data, empty list, loading, and load failed",
+      "expected_behavior": [
+        "framework in stats.json is react; with a production build it is null and there is a warning",
+        "The trigger buttons of Tooltip and DropdownMenu are named Button, not TooltipTrigger or DropdownMenuTrigger; an <a> wrapped by Button asChild is also named Button",
+        "OrderRow, Badge, Skeleton, EmptyState and ErrorState are components; lucide icons are vectors named after the icon (RefreshCw, Funnel…)",
+        "Layer names contain no auto-generated ids like radix-_r_1_ and no Tailwind classes like inline-flex",
+        "Loading is set up with a request that never responds; the error state shows the message from the backend"
+      ],
+      "baseline": {
+        "screens": 4,
+        "diffPercent": null,
+        "colorBinding": null,
+        "note": "0.6.0: only capture and packing were done (al-capture, al-pack), and the component names on every screen were checked one by one; not yet built in Figma; fill in diffPercent next time"
+      }
+    },
+    {
+      "id": "next-app-router-rsc",
+      "project": "Project G (Next.js 16 App Router, React 19; the page and cards are Server Components, the filter buttons are client components; desktop 1024)",
+      "query": "Bring the orders page into Figma",
+      "expected_behavior": [
+        "Server Components (Page, OrderCard, StatusPill) have component names; nested ones take the outermost name (PaidPill wrapping StatusPill → PaidPill)",
+        "A Server Component that returns a Fragment is not counted as a component; when a Server Component directly returns a client component, the outer name is used",
+        "Neither the screenshot nor the layout tree contains the Next.js dev mode N badge (nextjs-portal)"
+      ],
+      "baseline": {
+        "screens": 1,
+        "diffPercent": null,
+        "colorBinding": null,
+        "note": "0.6.0: only capture and packing were done, and component names were checked; not yet built in Figma"
+      }
+    }
+  ]
+}

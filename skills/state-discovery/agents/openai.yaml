@@ -1,0 +1,4 @@
+interface:
+  display_name: "State Discovery"
+  short_description: "Inventory every screen state of a feature and list missing error, empty and loading states"
+  default_prompt: "Use $state-discovery to list every state of this feature and the missing error handling as a state matrix."

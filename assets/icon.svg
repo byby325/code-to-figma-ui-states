@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- figma-state-board icon: a state board of screens, one of them a dashed "gap check" card -->
+  <rect width="1024" height="1024" rx="224" fill="#26304C"/>
+  <g transform="translate(152 212)">
+    <!-- row 1 -->
+    <g>
+      <rect x="0" y="0" width="208" height="272" rx="28" fill="#FFFFFF"/>
+      <rect x="28" y="32" width="152" height="20" rx="10" fill="#26304C"/>
+      <rect x="28" y="76" width="112" height="16" rx="8" fill="#B9C3D6"/>
+      <rect x="28" y="124" width="152" height="56" rx="12" fill="#4BA3F7"/>
+      <rect x="28" y="204" width="152" height="40" rx="12" fill="#E8EEFB"/>
+    </g>
+    <g transform="translate(256 0)">
+      <rect x="0" y="0" width="208" height="272" rx="28" fill="#FFFFFF"/>
+      <rect x="28" y="32" width="152" height="20" rx="10" fill="#26304C"/>
+      <rect x="28" y="76" width="112" height="16" rx="8" fill="#B9C3D6"/>
+      <circle cx="104" cy="168" r="40" fill="none" stroke="#4BA3F7" stroke-width="16" stroke-dasharray="180 80" stroke-linecap="round"/>
+    </g>
+    <g transform="translate(512 0)">
+      <rect x="0" y="0" width="208" height="272" rx="28" fill="#FFFFFF"/>
+      <rect x="28" y="32" width="152" height="20" rx="10" fill="#26304C"/>
+      <rect x="28" y="76" width="112" height="16" rx="8" fill="#B9C3D6"/>
+      <rect x="28" y="124" width="152" height="40" rx="12" fill="#E8EEFB"/>
+      <rect x="28" y="180" width="152" height="40" rx="12" fill="#E8EEFB"/>
+    </g>
+    <!-- row 2: one real screen, one gap-check wireframe -->
+    <g transform="translate(128 328)">
+      <rect x="0" y="0" width="208" height="272" rx="28" fill="#FFFFFF"/>
+      <rect x="28" y="32" width="152" height="20" rx="10" fill="#26304C"/>
+      <rect x="28" y="76" width="112" height="16" rx="8" fill="#B9C3D6"/>
+      <rect x="28" y="124" width="152" height="120" rx="12" fill="#E8EEFB"/>
+    </g>
+    <g transform="translate(384 328)">
+      <rect x="8" y="8" width="192" height="256" rx="24" fill="none" stroke="#FF8A4C" stroke-width="14" stroke-dasharray="34 22" stroke-linecap="round"/>
+      <rect x="92" y="72" width="24" height="88" rx="12" fill="#FF8A4C"/>
+      <circle cx="104" cy="200" r="15" fill="#FF8A4C"/>
+    </g>
+  </g>
+</svg>

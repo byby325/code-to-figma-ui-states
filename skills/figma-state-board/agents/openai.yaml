@@ -1,0 +1,4 @@
+interface:
+  display_name: "Figma State Board"
+  short_description: "Lay out every state of a feature in Figma and flag missing error, empty and loading screens"
+  default_prompt: "Use $figma-state-board to inventory every state of this feature and the missing error handling; show me the state matrix first, then build the state board in Figma."
