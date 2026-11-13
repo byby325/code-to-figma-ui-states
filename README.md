@@ -78,12 +78,12 @@ Free plans get about 20 Figma MCP calls a month, which is not enough to rebuild 
 Make a state board for the checkout page with browser screenshots in the cards, in this Figma file: <link>
 ```
 
-The board, the gap check and the wireframes are the same. Each card shows a 2x screenshot of the running app instead of editable layers, and the whole board takes about 5 calls however many states it has. Any card can be rebuilt as layers later.
+The board, the gap check and the wireframes are the same. Each card shows a 2x screenshot of the running app instead of editable layers, and the whole board takes about 3 calls however many states it has. Any card can be rebuilt as layers later.
 
 ## Requirements
 
 - Claude Code or Codex, with the [Figma MCP server](https://developers.figma.com/docs/figma-mcp-server/) connected. The signed-in account needs **edit** access to the target file
-- **Figma MCP call budget.** Starter plans and View/Collab seats get about 20 calls a month; Full/Dev seats on paid plans get 200+ a day. A state board with rebuilt screens needs roughly `screens × 2 + 5` calls; one with browser screenshots needs about 5. The skill estimates this up front and tells you if it won't fit
+- **Figma MCP call budget.** Starter plans and View/Collab seats get about 20 calls a month; Full/Dev seats on paid plans get 200+ a day. A state board with rebuilt screens needs roughly `screens × 2 + 5` calls; one with browser screenshots needs about 3. The skill estimates this up front and tells you if it won't fit
 - To rebuild screens from code: a web app you can run in dev mode (React 18–19 or Vue 3 for component detection), Node 18+, Playwright (uses your local Chrome; nothing else to download), Python 3 with Pillow for the visual diff
 
 ## How it works
@@ -100,7 +100,7 @@ The board, the gap check and the wireframes are the same. Each card shows a 2x s
 - **Vue 3:** five projects rebuilt in Figma and diffed against the browser: SCSS, Tailwind, Playwright fixtures, Nuxt (full page) and frappe-ui (oklch colors, CSS-mask icons, intercepted APIs)
 - **React 18 and 19:** component detection is tested against real React (function and class components, `memo`, `forwardRef`, Radix `asChild`, providers, styled-components, production builds) and on two apps: Vite + Radix + Tailwind 4, and Next.js App Router, where Server Component names come through too. These are verified up to capture; Figma rebuild baselines for React aren't recorded yet
 
-- **Screenshot boards (0.8.0):** the capture mode and the script that fits screenshots into cards are tested without Figma (`npm test`); the full run in a real Figma file hasn't been recorded yet
+- **Screenshot boards (0.8.0):** run end to end in a real Figma file on a free Starter plan: a React orders page with four states and two gap cards, built and audited in 2 counted calls
 
 Baselines are in [`evals/trials.json`](skills/code-to-figma/evals/trials.json).
 

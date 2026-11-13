@@ -14,6 +14,7 @@ Official limits ([Rate limits](https://developers.figma.com/docs/figma-mcp-serve
 | Full, Dev | 20 per month (measured) | 200 per day, 10 per minute | 200 per day, 15 per minute | 600 per day, 20 per minute |
 
 - Officially, only tools that "read data" count and write tools don't, but `use_figma` is not listed. Measured in 2026-11: on the Starter plan, calls were blocked at about the 21st, which matches the count of `use_figma` (**including write-only builds**) plus `get_screenshot`; `upload_assets`, `create_new_file` and `whoami` appear not to count
+- The budget is counted per plan (team), not per account. Measured 2026-11-14: a file in a team where the account has a View seat was blocked, and a new file in another Starter team with a Full seat worked in the same hour
 - The budget follows the seat the signed-in account has **in the plan that owns the file**. The same person may be Full in one team and View in another; `whoami` lists the seat for each plan
 
 **How to estimate**: counted calls ≈ screens × 2 + 5
@@ -26,16 +27,16 @@ Official limits ([Rate limits](https://developers.figma.com/docs/figma-mcp-serve
 | Screenshot each screen for comparison (`get_screenshot`) | screens |
 | Audit (audit.js and audit-screens.js in the same `use_figma`), Components section screenshot | 2–3 |
 
-A state board with browser screenshots in its cards (figma-state-board Route C) doesn't grow with the number of screens: counted calls ≈ 5
+A state board with browser screenshots in its cards (figma-state-board Route C) doesn't grow with the number of screens: counted calls ≈ 3
 
 | Item | Calls |
 |---|---|
 | Read the target file | 1 |
 | Build the state board skeleton | 1 |
-| Fit the screenshots and audit (screenshot-slots.js and audit.js in the same `use_figma`) | 1 |
-| Screenshot the board (`get_screenshot`, one for the section or one per group) | 1–2 |
+| Fit the screenshots, audit and screenshot the board (screenshot-slots.js, audit.js and `await section.screenshot()` in the same `use_figma`) | 1 |
+| A closer look at one group (`get_screenshot` with a larger `maxDimension`), only if the inline screenshot is too small to read | 0–1 |
 
-The screenshots go in through `upload_assets`, which did not count when measured. Figma may change that: if a call is refused, stop as the stop conditions say.
+In a new, blank file you can skip the read: the skeleton call is the access check. Measured 2026-11-14 on a Starter plan with a Full seat: a 4-card board took 2 counted calls (skeleton; fit + audit + inline screenshot), and `upload_assets` with the four slot ids as `nodeIds` filled the slots directly. Whether `upload_assets` counts could not be told apart at this size. Figma may change any of this: if a call is refused, stop as the stop conditions say.
 
 **Before starting**: use `whoami` to find the seat in the plan that owns the target file, and compare it with the estimate. If it is not enough, tell the user first and let them choose:
 

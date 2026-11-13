@@ -84,7 +84,7 @@
 幫結帳頁做情境稿，卡片裡放瀏覽器截圖就好，放到這個 Figma 檔：<連結>
 ```
 
-板面、缺漏檢查和線框都一樣，只是每張卡放的是實際畫面的 2 倍截圖，不是可編輯圖層。不管有幾個狀態，整份大約只要 5 次呼叫。之後任何一張卡都可以再重建成圖層。
+板面、缺漏檢查和線框都一樣，只是每張卡放的是實際畫面的 2 倍截圖，不是可編輯圖層。不管有幾個狀態，整份大約只要 3 次呼叫。之後任何一張卡都可以再重建成圖層。
 
 以前用複製資料夾的方式裝過 skill 的，要把舊的刪掉，不然會有兩個同名 skill：
 
@@ -95,7 +95,7 @@ rm -rf ~/.claude/skills/figma-state-board ~/.codex/skills/figma-state-board
 ## 需要
 
 - Claude Code 或 Codex，並連好 [Figma MCP](https://developers.figma.com/docs/figma-mcp-server/)。登入的帳號要能**編輯**目標檔。Figma plugin（提供 `figma-use`、`figma-generate-design`）建議一起裝；沒裝時 skill 會用 MCP 的 `get_figma_skill` 讀同樣的指引
-- **Figma MCP 呼叫額度**：Starter 方案或 View／Collab 座位每月約 20 次，付費方案的 Full／Dev 座位每天 200 次以上。畫面重建成圖層的情境稿大約要「張數 × 2 + 5」次，卡片放瀏覽器截圖的大約 5 次。開工前 skill 會先估，不夠就先跟你講。細節見 [scale-guard.md](skills/code-to-figma/references/scale-guard.md)
+- **Figma MCP 呼叫額度**：Starter 方案或 View／Collab 座位每月約 20 次，付費方案的 Full／Dev 座位每天 200 次以上。畫面重建成圖層的情境稿大約要「張數 × 2 + 5」次，卡片放瀏覽器截圖的大約 3 次。開工前 skill 會先估，不夠就先跟你講。細節見 [scale-guard.md](skills/code-to-figma/references/scale-guard.md)
 - 從程式重建畫面時：
   - 跑得起 dev 模式的 Web 專案；元件偵測支援 React 18–19 和 Vue 3
   - Node 18 以上
@@ -129,7 +129,7 @@ rm -rf ~/.claude/skills/figma-state-board ~/.codex/skills/figma-state-board
 
 - **Vue 3**：五種專案在 Figma 重建並和瀏覽器比對過：SCSS、Tailwind、Playwright fixture、Nuxt 全頁，以及 frappe-ui（oklch 色票、CSS mask 圖示、攔截後端 API）
 - **React 18、19**：元件偵測用真的 React 測過（function、class component、`memo`、`forwardRef`、Radix 的 `asChild`、Provider、styled-components、production build），也在兩個專案上跑過：Vite + Radix + Tailwind 4，以及 Next.js App Router（Server Component 的名稱也抓得到）。目前驗證到擷取為止，還沒有在 Figma 重建的基準
-- **截圖版情境稿（0.8.0）**：純截圖的擷取模式，以及把截圖放進卡片的腳本，都有不需要 Figma 的測試（`npm test`）；還沒有在真的 Figma 檔完整跑過
+- **截圖版情境稿（0.8.0）**：在免費 Starter 方案的真實 Figma 檔完整跑過：React 訂單頁的四個狀態加兩張缺漏卡，建板和驗收共用 2 次計額度的呼叫
 
 結果和基準在 [evals/trials.json](skills/code-to-figma/evals/trials.json)。Svelte、Angular 等框架的元件邊界還沒支援（仍會偵測重複結構），原生 App、Canvas 繪製的畫面不適用。已知限制列在 [code-to-figma/SKILL.md](skills/code-to-figma/SKILL.md)。
 
