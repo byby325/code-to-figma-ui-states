@@ -28,6 +28,7 @@ This skill owns the overall flow, the board and the audit. Other work goes to ot
 This skill's own files:
 - [board-format.md](references/board-format.md): board layout, type sizes, tags and card ID rules. Read before drawing anything
 - [board-skeleton.js](scripts/board-skeleton.js): builds the board skeleton and gap wireframes from the matrix. Used in step 4
+- [screenshot-slots.js](scripts/screenshot-slots.js): fits uploaded browser screenshots into the cards. Used in step 5 on Route C
 - [audit.js](scripts/audit.js): board audit. Used in step 6
 
 If the project has its own UI rules skill (for example, the project's UI guidelines skill), follow it for product screen tokens, naming and acceptance.
@@ -47,7 +48,7 @@ Ask for anything missing:
 As soon as you have the Figma link, do two things first. Don't wait until the inventory is done to find out you can't draw into the file:
 
 1. **Confirm read and write access**: `create_session`, then run one read-only `use_figma` (list pages and top-level nodes). If it reports "could not access the requested file", use `whoami` to see which account MCP is signed in as, and give the user two options: share the file with that account with can edit, or sign in with an account that has access in the connector settings (after switching, the original account's files can't be opened)
-2. **Estimate the call budget**: follow [scale-guard.md](../code-to-figma/references/scale-guard.md) "MCP call budget" to estimate how many calls this run needs, and compare it with the seats of the target file's plan in `whoami`. If it's not enough, say so first and let the user choose: split into batches, switch files, or do fewer comparisons
+2. **Estimate the call budget**: follow [scale-guard.md](../code-to-figma/references/scale-guard.md) "MCP call budget" to estimate how many calls this run needs, and compare it with the seats of the target file's plan in `whoami`. If it's not enough, say so first and let the user choose: Route C (browser screenshots in the cards, about 5 calls for the whole board; step 5), split into batches, switch files, or do fewer comparisons
 
 Done when: all six items have a clear value, or the user said explicitly that they don't apply; the target file is readable; the call budget is enough, or the user has chosen how to split the work.
 
@@ -92,8 +93,9 @@ Pick a route first and confirm it with the user:
 
 - **Route A: copy the mockups** (default). Use when the target file or library has complete mockup screens. You can bind variables and keep Auto Layout.
 - **Route B: rebuild from the project code**. Use when the target file has no mockups to copy, or when the user asks to rebuild from code instead of pasting mockups. Follow code-to-figma and pass `slotId` to `__alBuild`; the product screen goes into the card's placeholder slot. Currently Web front ends only.
+- **Route C: browser screenshots**. Each Prototype card shows a screenshot of the running app; nothing is rebuilt. The whole board takes about 5 counted calls however many cards it has, so offer it when the call budget can't cover Route B (Starter plans, View and Collab seats), or when the user only needs the list of states and the gap check. The screens are pictures, not editable layers; say so when you offer it and again in the report. Web front ends only. Steps are under "Route C" below.
 
-On both routes, product screens must follow [screen-structure.md](../code-to-figma/references/screen-structure.md): screen root frame width Fixed = W; Auto Layout for containers whose children are arranged; no Groups; repeated UI as components (variants for different states); carousel containers clip and are never Hug; long text Fill + auto height. Gap check cards (In spec, Suggested) follow the wireframe spec in board-format.md; don't draw fake product UI.
+On Routes A and B, product screens must follow [screen-structure.md](../code-to-figma/references/screen-structure.md): screen root frame width Fixed = W; Auto Layout for containers whose children are arranged; no Groups; repeated UI as components (variants for different states); carousel containers clip and are never Hug; long text Fill + auto height. Gap check cards (In spec, Suggested) follow the wireframe spec in board-format.md; don't draw fake product UI.
 
 Steps 1–3 below are Route A:
 
@@ -102,17 +104,25 @@ Steps 1–3 below are Route A:
 2. **Build one representative screen per device first**, and compare its screenshot with the prototype or the live screen: move on only once text, spacing, corner radius and tokens are all right. If there's nothing to compare with, say in the report that these screens weren't compared.
 3. Generate the remaining Prototype cards from the representative screen by clone or instance plus overrides, changing only what differs in this state.
 
-Done when: you have looked at a screenshot of each device's representative screen, and it matches the prototype, or you noted that there was nothing to compare with. Route B must also meet the completion criteria in code-to-figma.
+Route C:
+
+1. Capture: follow [web-capture.md](../code-to-figma/references/web-capture.md) steps 1–3 with `shotOnly: true` in the config. It writes `shot/<ID>.jpg` at 2x and skips the layout tree. Read `stats.json`: a warning about 4096px means the screen is too long for one image; capture it as several viewport-height cards instead
+2. Look at every screenshot locally before uploading. This is the comparison step on Route C: a wrong state, a spinner that never finished or a dev toolbar left in the shot costs nothing to fix here
+3. Upload: call `upload_assets` with `nodeIds` set to the cards' `slotId`s in card order (at most 60 per call). Write the submitUrls to a file, one per line, and send the screenshots in the same order: `python3 al-upload.py urls.txt capture/shot/C01.jpg capture/shot/C02.jpg`. If `upload_assets` won't fill the slots, call it with `currentPageId` and `count` instead; the screenshots land on the page as layers named `<ID>.jpg`, and the next step moves them into their cards. Don't rename the files
+4. Run [screenshot-slots.js](scripts/screenshot-slots.js) with `SECTION_ID` replaced, in the same `use_figma` call as audit.js (step 6). It sizes each slot to its screenshot and returns `placed`, `missing` and `skipped`. Upload again for the cards in `missing`
+5. To turn a screenshot card into editable layers later, rebuild that card with Route B and pass the same `slotId`; the build replaces the picture
+
+Done when: you have looked at a screenshot of each device's representative screen, and it matches the prototype, or you noted that there was nothing to compare with. Route B must also meet the completion criteria in code-to-figma. On Route C, every Prototype card is in `placed`, or the report lists the ones that are not.
 
 ### 6. Audit
 
 1. Run both audit scripts, replacing `SECTION_ID` with the target section. Paste both into the **same** `use_figma` call (wrap each in an async function, call them in order and return both results) to save one call from the budget:
    - [audit.js](scripts/audit.js): the board. Whether groups have a title and description, duplicate card IDs, whether card IDs cited in descriptions exist, truncated descriptions, equal card widths within a group, whether Scenarios is wide enough, whether gap check cards have a tag and a **Basis** (zh-TW: 依據), whether the coverage summary numbers are right
-   - [audit-screens.js](../code-to-figma/scripts/audit-screens.js): the product screens inside cards. Structure, text offset, binding ratio, scale. Run it on both routes
+   - [audit-screens.js](../code-to-figma/scripts/audit-screens.js): the product screens inside cards. Structure, text offset, binding ratio, scale. Run it on Routes A and B. On Route C there are no layers to check: skip it, run screenshot-slots.js and audit.js in one call, and check that `screens.empty` in the audit result lists no card
 2. If the whole section is too big to screenshot, screenshot one group at a time and view it at a normal readable scale: text alignment, clipping, overlap, and whether screens in the same row are top-aligned. Screenshot the Components section too: problems hidden because the card clips the screen show up there. A component shouldn't be taller than its screen, have large empty areas, or be cut off by the section.
-3. Spot-check three kinds of cards against the product: longest text, error state, most items. On Route B, compare every Prototype card with its browser screenshot (web-capture.md "6. Compare every card after the batch"); looking only at the thumbnails of a whole group misses things.
+3. Spot-check three kinds of cards against the product: longest text, error state, most items. On Route B, compare every Prototype card with its browser screenshot (web-capture.md "6. Compare every card after the batch"); looking only at the thumbnails of a whole group misses things. On Route C the cards are the browser screenshots, so one `get_screenshot` of the section (or one per group when it is too big) is enough to check that every card has its picture and nothing overlaps; there is no Components section.
 
-Done when: `issues` from both audits is empty, or every issue has been reported to the user with the reason; you have looked at a screenshot of every group and of the Components section.
+Done when: `issues` from both audits is empty, or every issue has been reported to the user with the reason; you have looked at a screenshot of every group and of the Components section. On Route C: `issues` from audit.js and `screens.empty` are both empty, and you have looked at the board in a screenshot.
 
 ## Report
 
@@ -122,4 +132,5 @@ Done when: `issues` from both audits is empty, or every issue has been reported 
 - List each gap check card with its basis: In spec means the prototype missed it and it should be built; Suggested is for design and product to decide whether to build
 - State clearly: which screens were compared with the product, which are illustrative per the rules, the audit results, and where rules and code disagree and haven't been settled
 - On Route B, also report per code-to-figma "Report"; when there are required libraries, report per figma-library-binding "Report"
+- On Route C, say that the Prototype cards are browser screenshots and not editable layers, list any card without a screenshot, and say that any card can be rebuilt as layers later with Route B
 - Don't call "drawn" "audited"; say directly which groups you haven't looked at in a screenshot

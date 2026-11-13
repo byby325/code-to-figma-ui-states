@@ -5,7 +5,7 @@
 **Find the error, empty and loading screens your prototype forgot, then see every state of the feature on one Figma canvas.**
 
 [![test](https://github.com/byby325/figma-state-board/actions/workflows/test.yml/badge.svg)](https://github.com/byby325/figma-state-board/actions/workflows/test.yml)
-[![version](https://img.shields.io/badge/version-0.7.0-informational)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-0.8.0-informational)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![works with Claude Code | Codex](https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex-D97757)
 
@@ -70,10 +70,20 @@ Turn /settings into editable Figma layers
 
 It checks it can write to the file, estimates the Figma MCP calls the job needs, shows you the state matrix, and waits for your OK before drawing anything.
 
+### On a free Figma plan
+
+Free plans get about 20 Figma MCP calls a month, which is not enough to rebuild a board's screens as layers. Ask for screenshots instead:
+
+```text
+Make a state board for the checkout page with browser screenshots in the cards, in this Figma file: <link>
+```
+
+The board, the gap check and the wireframes are the same. Each card shows a 2x screenshot of the running app instead of editable layers, and the whole board takes about 5 calls however many states it has. Any card can be rebuilt as layers later.
+
 ## Requirements
 
 - Claude Code or Codex, with the [Figma MCP server](https://developers.figma.com/docs/figma-mcp-server/) connected. The signed-in account needs **edit** access to the target file
-- **Figma MCP call budget.** Starter plans and View/Collab seats get about 20 calls a month; a state board needs roughly `screens × 2 + 5`. Full/Dev seats on paid plans get 200+ a day. The skill estimates this up front and tells you if it won't fit
+- **Figma MCP call budget.** Starter plans and View/Collab seats get about 20 calls a month; Full/Dev seats on paid plans get 200+ a day. A state board with rebuilt screens needs roughly `screens × 2 + 5` calls; one with browser screenshots needs about 5. The skill estimates this up front and tells you if it won't fit
 - To rebuild screens from code: a web app you can run in dev mode (React 18–19 or Vue 3 for component detection), Node 18+, Playwright (uses your local Chrome; nothing else to download), Python 3 with Pillow for the visual diff
 
 ## How it works
@@ -81,7 +91,7 @@ It checks it can write to the file, estimates the Figma MCP calls the job needs,
 1. **Inventory.** Walks the feature's code (`v-if`, loading/error branches, permission checks, empty lists, API error codes) and the spec, then checks a gap list: loading, empty, network, auth, validation, business rules, data extremes, concurrency, feedback. Every state points to a file and line
 2. **You confirm the matrix.** Merge cards, drop suggestions, then it draws
 3. **Capture.** Runs your dev server and drives each state with your existing mocks, e2e fixtures, or by intercepting API responses, so no repo changes are needed
-4. **Rebuild.** Extracts a layout tree from the DOM (direction, gap, padding, alignment, component boundaries) and builds it with the Figma Plugin API as Auto Layout frames, components and instances, one screen at a time to keep file memory safe
+4. **Rebuild.** Extracts a layout tree from the DOM (direction, gap, padding, alignment, component boundaries) and builds it with the Figma Plugin API as Auto Layout frames, components and instances, one screen at a time to keep file memory safe. On a small call budget it puts browser screenshots in the cards instead
 5. **Board.** One script lays out the section, groups, cards and gap wireframes from the matrix
 6. **Audit.** Structural checks plus a pixel diff against the browser for each screen. It tells you what was compared and what wasn't
 
@@ -89,6 +99,8 @@ It checks it can write to the file, estimates the Figma MCP calls the job needs,
 
 - **Vue 3:** five projects rebuilt in Figma and diffed against the browser: SCSS, Tailwind, Playwright fixtures, Nuxt (full page) and frappe-ui (oklch colors, CSS-mask icons, intercepted APIs)
 - **React 18 and 19:** component detection is tested against real React (function and class components, `memo`, `forwardRef`, Radix `asChild`, providers, styled-components, production builds) and on two apps: Vite + Radix + Tailwind 4, and Next.js App Router, where Server Component names come through too. These are verified up to capture; Figma rebuild baselines for React aren't recorded yet
+
+- **Screenshot boards (0.8.0):** the capture mode and the script that fits screenshots into cards are tested without Figma (`npm test`); the full run in a real Figma file hasn't been recorded yet
 
 Baselines are in [`evals/trials.json`](skills/code-to-figma/evals/trials.json).
 
@@ -99,6 +111,8 @@ Not yet: component boundaries for Svelte, Angular and others (repeated structure
 **Figma can already bring code into the canvas. Why this?** Figma's own tools (and its official agent skills) bring in the page you point them at. This plugin starts one step earlier: it works out *which* states the feature has from the code, including the ones the prototype never renders, and puts them side by side with a gap check. The screens it builds are Auto Layout and components, with repeated UI as instances and states as variants. It also works with Figma's official skills: when they're installed, it uses them for the Plugin API rules.
 
 **How is this different from importing a screenshot or HTML into Figma?** Those give you a picture or flat layers of one screen. This builds editable structure and covers *every state* of the feature.
+
+**I'm on a free Figma plan. Can I use it?** Yes. The state inventory needs no Figma at all, and a board with browser screenshots in its cards fits in the free plan's monthly calls. Rebuilding every screen as editable layers needs a Full or Dev seat on a paid plan.
 
 **Will it overwrite my designs?** No. It adds a new section and never edits existing frames. Before writing to a file that already has content, it asks you to save a version.
 

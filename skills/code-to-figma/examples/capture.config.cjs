@@ -6,6 +6,7 @@ module.exports = {
   out: './capture',
   preset: 'my-ds', // file name in figma-library-binding/presets/; omit it if there is no design system
   hide: ['.dev-tool', '.mock-toolbar'], // UI that only exists in mock mode
+  // shotOnly: true, // screenshots only, at 2x: for state boards that show browser screenshots (figma-state-board Route C)
   ready: async page => { await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {}); },
   cards: {
     L01: { url: '/home' },

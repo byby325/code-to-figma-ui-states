@@ -5,7 +5,7 @@
 **找出原型漏掉的錯誤、空狀態和載入畫面，再把功能的所有狀態攤在同一張 Figma 畫布上。**
 
 [![test](https://github.com/byby325/figma-state-board/actions/workflows/test.yml/badge.svg)](https://github.com/byby325/figma-state-board/actions/workflows/test.yml)
-[![version](https://img.shields.io/badge/version-0.7.0-informational)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-0.8.0-informational)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![works with Claude Code | Codex](https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex-D97757)
 
@@ -76,6 +76,16 @@
 
 它會先確認寫得進這個檔、估這次要用多少 Figma MCP 呼叫，再給你狀態矩陣，等你確認才開始畫。
 
+### Figma 免費方案
+
+免費方案每月約 20 次 Figma MCP 呼叫，不夠把整份情境稿的畫面重建成圖層。可以改用截圖：
+
+```text
+幫結帳頁做情境稿，卡片裡放瀏覽器截圖就好，放到這個 Figma 檔：<連結>
+```
+
+板面、缺漏檢查和線框都一樣，只是每張卡放的是實際畫面的 2 倍截圖，不是可編輯圖層。不管有幾個狀態，整份大約只要 5 次呼叫。之後任何一張卡都可以再重建成圖層。
+
 以前用複製資料夾的方式裝過 skill 的，要把舊的刪掉，不然會有兩個同名 skill：
 
 ```bash
@@ -85,7 +95,7 @@ rm -rf ~/.claude/skills/figma-state-board ~/.codex/skills/figma-state-board
 ## 需要
 
 - Claude Code 或 Codex，並連好 [Figma MCP](https://developers.figma.com/docs/figma-mcp-server/)。登入的帳號要能**編輯**目標檔。Figma plugin（提供 `figma-use`、`figma-generate-design`）建議一起裝；沒裝時 skill 會用 MCP 的 `get_figma_skill` 讀同樣的指引
-- **Figma MCP 呼叫額度**：Starter 方案或 View／Collab 座位每月約 20 次，一份情境稿大約要「張數 × 2 + 5」次；付費方案的 Full／Dev 座位每天 200 次以上。開工前 skill 會先估，不夠就先跟你講。細節見 [scale-guard.md](skills/code-to-figma/references/scale-guard.md)
+- **Figma MCP 呼叫額度**：Starter 方案或 View／Collab 座位每月約 20 次，付費方案的 Full／Dev 座位每天 200 次以上。畫面重建成圖層的情境稿大約要「張數 × 2 + 5」次，卡片放瀏覽器截圖的大約 5 次。開工前 skill 會先估，不夠就先跟你講。細節見 [scale-guard.md](skills/code-to-figma/references/scale-guard.md)
 - 從程式重建畫面時：
   - 跑得起 dev 模式的 Web 專案；元件偵測支援 React 18–19 和 Vue 3
   - Node 18 以上
@@ -98,12 +108,14 @@ rm -rf ~/.claude/skills/figma-state-board ~/.codex/skills/figma-state-board
 2. 讀程式碼，整理出一份狀態矩陣，**等你確認後才開始畫**。原型卡超過 150 張時，會先請你決定合併卡、拆頁或拆檔
 3. 準備每張卡的資料：用專案的 mock、e2e fixture，或攔截後端 API 造出每個狀態，不用改 repo
 4. 用骨架腳本一次建好板面：標題、覆蓋摘要、群組、每張卡的占位框，以及缺漏檢查的線框。目標頁上已有其他內容時，會先請你存版本
-5. 優先複製 Figma 檔案裡現成的設計稿畫面；沒有設計稿時從專案程式重建，一次一張放進占位框，產出是 Auto Layout＋component，代表畫面附隱藏的瀏覽器參考截圖。有 design system preset 時自動綁 token、圖示和元件
+5. 優先複製 Figma 檔案裡現成的設計稿畫面；沒有設計稿時從專案程式重建，一次一張放進占位框，產出是 Auto Layout＋component，代表畫面附隱藏的瀏覽器參考截圖。有 design system preset 時自動綁 token、圖示和元件。呼叫額度不夠時，改成在占位框放瀏覽器截圖
 6. 跑驗收腳本，逐組截圖檢查，最後回報哪些畫面對照過、哪些是示意，以及 node、圖片數、memory 和 MCP 呼叫次數
 
 ## 常見問題
 
 **Figma 自己已經能把程式碼帶進畫布，為什麼還要這個？** Figma 的工具（和官方的 agent skill）是把你指定的那一頁帶進來。這個 plugin 往前多做一步：先從程式碼找出這個功能**有哪些狀態**，包括原型從來沒畫出來的，再把它們並排、附上缺漏檢查。建出來的畫面是 Auto Layout 和 component，重複的 UI 是 instance、不同狀態是 variant。有裝 Figma 官方 skill 時，它會沿用那些 skill 的 Plugin API 規則。
+
+**我用 Figma 免費方案，可以用嗎？** 可以。狀態盤點完全不需要 Figma；卡片放瀏覽器截圖的情境稿，用免費方案每月的呼叫額度就做得完。要把每張畫面重建成可編輯圖層，需要付費方案的 Full 或 Dev 座位。
 
 **會蓋掉我的設計稿嗎？** 不會。它只新增 section，不改既有的 frame；目標頁上已有其他內容時，寫入前會先請你存版本。
 
@@ -117,6 +129,7 @@ rm -rf ~/.claude/skills/figma-state-board ~/.codex/skills/figma-state-board
 
 - **Vue 3**：五種專案在 Figma 重建並和瀏覽器比對過：SCSS、Tailwind、Playwright fixture、Nuxt 全頁，以及 frappe-ui（oklch 色票、CSS mask 圖示、攔截後端 API）
 - **React 18、19**：元件偵測用真的 React 測過（function、class component、`memo`、`forwardRef`、Radix 的 `asChild`、Provider、styled-components、production build），也在兩個專案上跑過：Vite + Radix + Tailwind 4，以及 Next.js App Router（Server Component 的名稱也抓得到）。目前驗證到擷取為止，還沒有在 Figma 重建的基準
+- **截圖版情境稿（0.8.0）**：純截圖的擷取模式，以及把截圖放進卡片的腳本，都有不需要 Figma 的測試（`npm test`）；還沒有在真的 Figma 檔完整跑過
 
 結果和基準在 [evals/trials.json](skills/code-to-figma/evals/trials.json)。Svelte、Angular 等框架的元件邊界還沒支援（仍會偵測重複結構），原生 App、Canvas 繪製的畫面不適用。已知限制列在 [code-to-figma/SKILL.md](skills/code-to-figma/SKILL.md)。
 

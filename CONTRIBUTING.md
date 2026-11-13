@@ -17,7 +17,7 @@ Check `skills/code-to-figma/references/troubleshooting.md` first; many symptoms 
 
 ```bash
 npm install          # installs playwright; set PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 to use your local Chrome
-npm test             # frontmatter + board skeleton (fake Figma) + extractor and React adapter (Chrome)
+npm test             # frontmatter + board skeleton (fake Figma) + extractor, capture and React adapter (Chrome)
 npm run test:fast    # no browser needed
 ```
 
@@ -30,7 +30,8 @@ The tests need no Figma account and use no MCP calls. They catch script errors, 
 | `al-extract.js` | Add a case to `tests/extract.test.cjs` that fails before your fix and passes after |
 | A framework adapter in `al-extract.js` | Test it against the real framework in the browser, like `tests/react.test.cjs` does for React 18 and 19, including its production build |
 | `al-build.js` or `al-extract.js` in a way that changes layout | Re-run every case in `skills/code-to-figma/evals/trials.json` in real Figma and update the baselines. A change often breaks only one kind of project |
-| `board-skeleton.js` or `audit.js` | Keep them consistent with `skills/figma-state-board/references/board-format.md`; add a test to `tests/board-skeleton.test.cjs` |
+| `al-capture.cjs` | Add a case to `tests/capture.test.cjs` |
+| `board-skeleton.js`, `screenshot-slots.js` or `audit.js` | Keep them consistent with `skills/figma-state-board/references/board-format.md`; add a test to `tests/board-skeleton.test.cjs` |
 | A `SKILL.md` description | `npm run test:fast` — an unquoted `: ` breaks YAML and the skill silently fails to load |
 | Anything user-visible | Add a line to `CHANGELOG.md` |
 

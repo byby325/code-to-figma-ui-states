@@ -11,6 +11,9 @@ const { makeFigma, runScript } = require('./fake-figma.cjs');
 const DIR = path.join(__dirname, '..', 'skills', 'figma-state-board', 'scripts');
 const skeleton = fs.readFileSync(path.join(DIR, 'board-skeleton.js'), 'utf8');
 const audit = fs.readFileSync(path.join(DIR, 'audit.js'), 'utf8');
+const shots = fs.readFileSync(path.join(DIR, 'screenshot-slots.js'), 'utf8');
+const withSection = (src, id) => src.replace("'REPLACE_ME'", JSON.stringify(id));
+const img = hash => [{ type: 'IMAGE', scaleMode: 'FIT', imageHash: hash }];
 const FONTS = [['Roboto', 'Bold'], ['Noto Sans TC', 'Regular'], ['Noto Sans TC', 'Bold'], ['Inter', 'Regular'], ['Inter', 'Bold']];
 
 const DESKTOP = {
@@ -115,6 +118,51 @@ const tests = {
     summary.characters = 'Prototype 9 · Gaps 2 (In spec 1 · Suggested 1)';
     const a = await runScript(audit.replace("'REPLACE_ME'", JSON.stringify(r.sectionId)), figma);
     assert.ok(a.issues.some(i => i.includes('Prototype 9')), JSON.stringify(a.issues));
+  },
+  async 'audit reports empty screen slots without calling them issues'() {
+    const { a } = await build(DESKTOP);
+    assert.deepStrictEqual(a.issues, []);
+    assert.deepStrictEqual(a.screens, { layers: 0, screenshots: 0, empty: ['L01', 'L02', 'L03', 'E01', 'E02', 'E03', 'E04', 'E05', 'E06', 'E07'] });
+  },
+  async 'screenshot slots: fills, child layers and loose page layers all land in their cards'() {
+    // 2x screenshots: L01 a 1280x800 viewport, L02 a 1280x2000 full page, L03 too narrow, E01 never uploaded
+    const figma = makeFigma({ fonts: FONTS, images: { a: { width: 2560, height: 1600 }, b: { width: 2560, height: 4000 }, c: { width: 640, height: 400 } } });
+    const r = await runScript(withBoard(DESKTOP), figma);
+    const sec = await figma.getNodeByIdAsync(r.sectionId);
+    const before = sec.height;
+    const slot = async id => figma.getNodeByIdAsync(r.slots[id]);
+    (await slot('L01')).fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }, ...img('a')]; // upload_assets with nodeIds
+    const inner = figma.createRectangle(); inner.fills = img('b'); (await slot('L02')).appendChild(inner); // image placed inside the slot
+    const loose = figma.createRectangle(); loose.name = 'L03.jpg'; loose.fills = img('c'); // image left on the page
+    const stray = figma.createRectangle(); stray.name = 'Z99.jpg'; stray.fills = img('a');
+    const built = figma.createFrame(); (await slot('E02')).appendChild(built); built.appendChild(figma.createFrame()); // a rebuilt screen stays as it is
+    const s = await runScript(withSection(shots, r.sectionId), figma);
+    assert.deepStrictEqual(s.placed.map(x => [x.id, ...x.size]), [['L01', 1280, 800], ['L02', 1280, 2000], ['L03', 1280, 800]]);
+    assert.deepStrictEqual(s.skipped, ['E02']);
+    assert.deepStrictEqual(s.missing, ['E01', 'E03', 'E04', 'E05', 'E06', 'E07']);
+    assert.ok(s.warnings.some(w => w.startsWith('L03') && w.includes('blurry')), JSON.stringify(s.warnings));
+    assert.ok(s.warnings.some(w => w.includes('Z99.jpg')), JSON.stringify(s.warnings));
+    const l1 = await slot('L01'), l2 = await slot('L02');
+    assert.deepStrictEqual(l1.fills, [{ type: 'IMAGE', scaleMode: 'FILL', imageHash: 'a' }]);
+    assert.strictEqual(l1.name, 'Screen (browser screenshot)');
+    assert.strictEqual(l1.placeholder, false);
+    assert.strictEqual(l2.children.length, 0);
+    assert.ok(inner.removed && loose.removed && !stray.removed);
+    assert.ok(sec.height > before, 'the section grows with the full-page screenshot');
+    const a = await runScript(withSection(audit, r.sectionId), figma);
+    assert.deepStrictEqual(a.issues, []);
+    assert.deepStrictEqual(a.screens, { layers: 1, screenshots: 3, empty: ['E01', 'E03', 'E04', 'E05', 'E06', 'E07'] });
+    // Running it again changes nothing
+    const again = await runScript(withSection(shots, r.sectionId), figma);
+    assert.deepStrictEqual(again.placed.map(x => x.id), ['L01', 'L02', 'L03']);
+  },
+  async 'screenshot slots: zh-TW board gets the Chinese layer name'() {
+    const figma = makeFigma({ fonts: FONTS, images: { a: { width: 2560, height: 1600 } } });
+    const r = await runScript(withBoard(DESKTOP_ZH), figma);
+    const l1 = await figma.getNodeByIdAsync(r.slots.L01); l1.fills = img('a');
+    const s = await runScript(withSection(shots, r.sectionId), figma);
+    assert.deepStrictEqual(s.placed.map(x => x.id), ['L01']);
+    assert.strictEqual(l1.name, '畫面（瀏覽器截圖）');
   },
   async 'duplicate card ID: nothing is written'() {
     await assert.rejects(build({ ...DESKTOP, gaps: { ...DESKTOP.gaps, cards: [{ ...DESKTOP.gaps.cards[0], id: 'L01' }] } }), /Duplicate/);

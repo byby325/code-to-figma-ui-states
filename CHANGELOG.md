@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.8.0
+
+### State boards on a small call budget
+
+- New Route C for `figma-state-board`: each Prototype card shows a browser screenshot of the running app instead of rebuilt layers. The whole board takes about 5 counted Figma MCP calls however many cards it has, so it fits the 20 calls a month of Starter plans and View/Collab seats. The gap check, wireframes and audit are unchanged, and any card can be rebuilt as editable layers later
+- `al-capture.cjs` takes `shotOnly: true`: screenshots only, at 2x, with no layout tree. A screen whose 2x image would pass Figma's 4096px image limit is saved at 1x, and one longer than 4096px gets a warning
+- New `screenshot-slots.js`: after the screenshots are uploaded, it makes each one its card's fill, sizes the slot to the image, and reports the cards that have no screenshot. It finds screenshots uploaded onto the slots, inside them, or left on the page as `<card ID>.jpg`
+- `audit.js` returns `screens`: how many Prototype cards hold layers, how many hold a screenshot, and which are still empty
+- `scale-guard.md` has the call estimate for Route C and offers it first when the budget is short
+- Not yet run in a real Figma file: the scripts are tested against the fake Figma and a real browser only
+
+### Tests
+
+- `board-skeleton.test.cjs`: 16 cases (was 13), adding empty slots in the audit and screenshot slots on English and zh-TW boards
+- New `capture.test.cjs`: 4 cases for the normal and `shotOnly` capture in Chrome
+
 ## 0.7.0
 
 ### English

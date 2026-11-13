@@ -67,6 +67,7 @@ module.exports = {
   out: './capture',                    // not in scratchpad; it gets wiped between sessions
   preset: 'my-ds',                     // file name in figma-library-binding/presets/; omit if none
   fullPage: false,                     // default height; each card can override it
+  shotOnly: false,                     // true: screenshots only, at 2x, no layout tree (state boards on Route C)
   settle: ['.marquee_inner'],          // selectors of infinite loop animations; they are stopped at their start
   hide: ['.dev-toolbar'],              // dev panels and toolbars that only exist in mock mode
   setup: async (context, id, card) => {}, // before each screen: intercept APIs, set cookies. id is the card ID
@@ -125,11 +126,12 @@ node al-capture.cjs capture.config.cjs           # all
 node al-capture.cjs capture.config.cjs L01 L02   # only the listed cards
 ```
 
-Outputs `json/<ID>.json`, `shot/<ID>.jpg` and `stats.json`. Check `stats.json`:
+Outputs `json/<ID>.json`, `shot/<ID>.jpg` and `stats.json`. With `shotOnly: true` there is no `json/`, and the screenshots are 2x so they stay sharp when someone zooms in on the board; a screen whose 2x image would pass Figma's 4096px image limit is saved at 1x. Check `stats.json`:
 
 - `warnings`: "No component info" means a production build was running; "icons are empty" means the icon source was blocked or had not loaded yet
 - `missingImages`: images that were not extracted
 - `nodes`: check this first when it differs a lot from similar screens
+- With `shotOnly`: a warning that the screen is longer than 4096px means Figma will scale the image down and blur it; capture that screen as several viewport-height cards
 
 ### 4. Send to Figma
 

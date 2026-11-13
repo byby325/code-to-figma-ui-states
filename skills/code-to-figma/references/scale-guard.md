@@ -26,11 +26,23 @@ Official limits ([Rate limits](https://developers.figma.com/docs/figma-mcp-serve
 | Screenshot each screen for comparison (`get_screenshot`) | screens |
 | Audit (audit.js and audit-screens.js in the same `use_figma`), Components section screenshot | 2–3 |
 
+A state board with browser screenshots in its cards (figma-state-board Route C) doesn't grow with the number of screens: counted calls ≈ 5
+
+| Item | Calls |
+|---|---|
+| Read the target file | 1 |
+| Build the state board skeleton | 1 |
+| Fit the screenshots and audit (screenshot-slots.js and audit.js in the same `use_figma`) | 1 |
+| Screenshot the board (`get_screenshot`, one for the section or one per group) | 1–2 |
+
+The screenshots go in through `upload_assets`, which did not count when measured. Figma may change that: if a call is refused, stop as the stop conditions say.
+
 **Before starting**: use `whoami` to find the seat in the plan that owns the target file, and compare it with the estimate. If it is not enough, tell the user first and let them choose:
 
-1. Split into batches: this time do only the representative screens and the most important group; do the rest after the budget resets
-2. Move to a file in a paid-plan team where the account has a Full/Dev seat
-3. Skip per-screen screenshot comparison; compare only the representative screens and screens at high risk of differences (state in the report which ones were not compared)
+1. For a state board, use Route C: browser screenshots in the cards instead of rebuilt layers. Any card can be rebuilt as layers later
+2. Split into batches: this time do only the representative screens and the most important group; do the rest after the budget resets
+3. Move to a file in a paid-plan team where the account has a Full/Dev seat
+4. Skip per-screen screenshot comparison; compare only the representative screens and screens at high risk of differences (state in the report which ones were not compared)
 
 **Ways to save calls**: paste both audit scripts into the same `use_figma`; compare a representative screen with a single `get_screenshot`, without also reading metadata; the `log.drift` returned by the build is already a structural check, so you don't need another read to confirm.
 
@@ -57,6 +69,7 @@ If you change 150, change `MAX_PROTOTYPE_CARDS` in audit to match.
 | Before writing | The target is an existing file, including deleting or rebuilding screens you built earlier | Ask the user to save a version (file menu › Save to Version History), and write only after they reply that it is saved. **Exception**: when the target page has nothing on it except what you built this time (new file, blank page), nothing can be overwritten, so you may skip saving a version and asking about memory; state "target page was empty" in the report |
 | Uploading temporary frames (data SVG, images) | Every time | One screen at a time: upload this screen's images and data, build it, confirm the temporary frames are deleted, then do the next. Don't upload the whole batch first; `__alBuild` stops if it sees another screen's temporary frames |
 | Batch writing | More than 100 screens, more than 20 unique images, or deleting and rebuilding several screens | Pause after each group and ask the user to report memory % |
+| Uploading screenshots (Route C) | More than 20 cards | Every card is one image of up to 4096px. Upload one group at a time and ask the user to report memory % after each |
 | Finishing | Every time | Ask the user to report memory % once, and write it in the report together with audit's `scale` |
 
 When screens are much bigger than mobile (e.g. full desktop pages), convert before comparing with the thresholds: estimated layers ≈ node count of the representative screen × number of cards × 1.3. Over 60,000 counts as over 150 screens; over 40,000 counts as over 100 screens.

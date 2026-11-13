@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // al-capture.cjs CONFIG [ID...]
 // Uses Playwright to put each screen into its state, extract the layout tree and take a reference screenshot. Outputs <out>/json/<ID>.json, <out>/shot/<ID>.jpg, <out>/stats.json.
+// With shotOnly: true in the config it takes only the screenshot, at 2x, for state boards that show browser screenshots instead of rebuilt layers (figma-state-board Route C).
 // The CONFIG format is in references/web-capture.md. In-page extraction is done by al-extract.js. You can also require this file and call capture() from a spec.
 const fs = require('fs');
 const path = require('path');
@@ -10,6 +11,7 @@ const SETTLE_MS = 450; // Wait for transition animations after interaction
 const FULL_PAGE_MS = 800; // Wait for lazy loading after enlarging the viewport
 const SETTLE_TIMEOUT_MS = 8000; // Upper limit for waiting on network and images. Pages that poll nonstop never reach idle, so continue when time is up
 const ICON_TIMEOUT_MS = 3000; // Upper limit for waiting on lazy-loaded icons. A blocked source never arrives; the stats warning reports it
+const MAX_IMAGE_PX = 4096; // Figma scales down images with a side longer than this
 const SCROLL_TIMEOUT_MS = 3000; // Upper limit for waiting on smooth scrolling to stop
 
 const readPreset = name => (name ? JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'figma-library-binding', 'presets', name + '.json'), 'utf8')) : {});
@@ -74,7 +76,7 @@ async function waitForScrollIdle(page) {
 }
 
 // Capture one screen. When the project's mocks are Playwright fixtures, set up the state in a spec and call this directly (see references/web-capture.md)
-// options: out (output folder), preset, extract, settle, hide, fullPage
+// options: out (output folder), preset, extract, settle, hide, fullPage, shotOnly
 async function capture(page, id, options) {
   const out = path.resolve(options.out);
   fs.mkdirSync(path.join(out, 'json'), { recursive: true });
@@ -95,11 +97,22 @@ async function capture(page, id, options) {
   await waitForScrollIdle(page);
   await page.evaluate(s => { __alFreeze(); __alSettle(s); }, options.settle || []);
   await page.waitForTimeout(150);
+  const shot = path.join(out, 'shot', id + '.jpg');
+  if (options.shotOnly) {
+    // Screenshot only: 2x when the context has it, unless that would pass Figma's image size limit
+    const size = await page.evaluate(() => ({ w: innerWidth, h: innerHeight, dpr: devicePixelRatio }));
+    const long = Math.max(size.w, size.h);
+    const scale = long * size.dpr > MAX_IMAGE_PX ? 'css' : 'device';
+    if (long > MAX_IMAGE_PX) warnings.push(`Screen is ${long}px on its long side; Figma scales images down to ${MAX_IMAGE_PX}px, so it will look blurry. Capture it as several viewport-height cards`);
+    // The first screenshot is often the previous frame
+    await page.screenshot({ path: shot, type: 'jpeg', quality: 90, scale });
+    await page.screenshot({ path: shot, type: 'jpeg', quality: 90, scale });
+    return { id, w: size.w, h: size.h, shotOnly: true, pixelRatio: scale === 'device' ? size.dpr : 1, warnings };
+  }
   const data = await page.evaluate(([n, o]) => __alExtract(n, o), [id, { ...preset.extract, ...options.extract }]);
   if (!data.framework) warnings.push('No component info: production build or a framework without an adapter; only repeated structures are detected');
   const json = JSON.stringify(data).replace(/[\u007f-\uffff]/g, c => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0'));
   fs.writeFileSync(path.join(out, 'json', id + '.json'), json);
-  const shot = path.join(out, 'shot', id + '.jpg');
   // The first screenshot is often the previous frame
   await page.screenshot({ path: shot, type: 'jpeg', quality: 85 });
   await page.screenshot({ path: shot, type: 'jpeg', quality: 85 });
@@ -127,7 +140,7 @@ async function main() {
     const card = config.cards[id];
     if (!card) { stats.push({ id, error: 'no such card in the config' }); continue; }
     // Open a new context for each card so the previous card's login and localStorage don't carry over
-    const context = await browser.newContext({ viewport: card.viewport || config.viewport, deviceScaleFactor: 1, bypassCSP: true, ...config.contextOptions });
+    const context = await browser.newContext({ viewport: card.viewport || config.viewport, deviceScaleFactor: config.shotOnly ? 2 : 1, bypassCSP: true, ...config.contextOptions });
     try {
       await context.addInitScript(SEED_RANDOM);
       // Shared setup runs first, then this card's own setup: routes registered later are matched first, so a card can override the shared interception

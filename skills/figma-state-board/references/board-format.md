@@ -30,7 +30,7 @@ SECTION "<Project>-<Feature>"            fill = light gray; e.g. Shop-Checkout
       └─ FRAME card "<ID> · <short name>"   ×n
          ├─ FRAME Card title row         HORIZONTAL: TEXT Card title "<ID> · <full name>" + Tag (only on In spec / Suggested)
          ├─ TEXT Card description "trigger; result"
-         └─ FRAME Screen                 Prototype: product UI; In spec / Suggested: wireframe
+         └─ FRAME Screen                 Prototype: product UI, or a browser screenshot (Route C); In spec / Suggested: wireframe
 ```
 
 Layer names and the coverage summary follow `BOARD.lang`:
@@ -49,6 +49,7 @@ Layer names and the coverage summary follow `BOARD.lang`:
 | Tag | 標籤 |
 | Card description | 卡片描述 |
 | Screen | 畫面 |
+| Screen (browser screenshot) | 畫面（瀏覽器截圖） |
 | Screen (wireframe) | 畫面（線框） |
 | `Prototype N · Gaps N (In spec N · Suggested N)` | `原型 N · 缺漏 N（規格有寫 N · 建議補 N）` |
 
@@ -66,6 +67,7 @@ W = product viewport width (e.g. phone 360 / 375 / 390, tablet 768, desktop 1280
 | Card title row | HORIZONTAL, gap 8, counter axis centered | Width Fill | Title text Fill, tag Hug |
 | Card description | — | Width W, height fixed at 3 lines (60 at the default type size) | textAutoResize NONE, so screens in the same row are top-aligned; if the text runs past 3 lines, shorten it; don't make one card taller |
 | Screen (product) | Follows the product | Width W Fixed, height Hug; the screen root frame inside is also width W Fixed | Corner radius always 0, following neither the product nor the template; clip; background follows the product. Structure per screen-structure.md |
+| Screen (browser screenshot) | — | Width W Fixed, height = W × the image's height ÷ width | The screenshot is the frame's only fill (scale mode Fill); no children; corner radius 0. Set by screenshot-slots.js |
 | Screen (wireframe) | VERTICAL, gap 8, padding 16 | Width W Fixed, height Hug, min 200 | White background, corner radius 8, 1.5px dashed border in the card's tag color |
 
 Screen frames use Hug height. The product screen inside is either viewport or full page (screen-structure.md), and the matrix must say which one each card is. Use viewport for states with fixed elements, and full page when the whole page's content must be visible; describe the product's actual scroll behavior in the description.

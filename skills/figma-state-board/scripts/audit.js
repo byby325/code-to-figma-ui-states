@@ -1,7 +1,8 @@
 // State board audit (use_figma, read-only; measuring descriptions creates a temporary clone and removes it right away).
 // Usage: replace SECTION_ID with the board section's node id (a string literal) and paste the whole script into use_figma.
 // Checks the board only: groups, card IDs, descriptions, tags, coverage summary. Check the product screens inside cards with
-// code-to-figma's audit-screens.js.
+// code-to-figma's audit-screens.js. `screens` in the result says what each Prototype card holds: rebuilt layers, a browser
+// screenshot (Route C), or nothing yet (`empty` lists those card IDs).
 // Accepts boards in English and Traditional Chinese (board-skeleton.js BOARD.lang).
 const SECTION_ID = 'REPLACE_ME';
 const GAP = 40;
@@ -37,6 +38,7 @@ const tagOf = (titleRow, title) => {
 
 const issues = [], ids = new Map(), refs = [];
 const count = { prototype: 0, spec: 0, suggested: 0 };
+const screens = { layers: 0, screenshots: 0, empty: [] };
 for (const g of groups) {
   const nn = g.name.slice(0, 2);
   const [gTitle, gDesc] = g.children;
@@ -85,6 +87,9 @@ for (const g of groups) {
       continue;
     }
     if (screen.cornerRadius !== 0) issues.push(`${id}: screen corner radius is ${String(screen.cornerRadius)}; product screens on the canvas need 0`);
+    if (screen.children.length) screens.layers++;
+    else if (Array.isArray(screen.fills) && screen.fills.some(f => f.type === 'IMAGE')) screens.screenshots++;
+    else screens.empty.push(id);
   }
 }
 for (const [from, to] of refs) if (to !== from && !ids.has(to)) issues.push(`${from}: refers to ${to}, which is not on the board`);
@@ -96,4 +101,4 @@ else {
   const want = { ...count, gaps: count.spec + count.suggested };
   for (const k of ['prototype', 'gaps', 'spec', 'suggested']) { const got = num(summary.characters, k); if (got !== want[k]) issues.push(`Coverage summary says ${LABELS[k][0]} ${got}, the board has ${want[k]}`); }
 }
-return { groups: groups.length, cards: ids.size, count, issues };
+return { groups: groups.length, cards: ids.size, count, screens, issues };

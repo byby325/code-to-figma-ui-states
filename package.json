@@ -1,13 +1,13 @@
 {
   "name": "figma-state-board",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "private": true,
   "description": "Turn any web feature into a Figma state board: every UI state rebuilt as editable layers, plus a gap check for missing error, empty and loading screens.",
   "license": "MIT",
   "author": "Dilly Chen",
   "repository": "github:byby325/figma-state-board",
   "scripts": {
-    "test": "node tests/frontmatter.test.cjs && node tests/board-skeleton.test.cjs && node tests/extract.test.cjs && node tests/react.test.cjs",
+    "test": "node tests/frontmatter.test.cjs && node tests/board-skeleton.test.cjs && node tests/extract.test.cjs && node tests/capture.test.cjs && node tests/react.test.cjs",
     "test:fast": "node tests/frontmatter.test.cjs && node tests/board-skeleton.test.cjs"
   },
   "devDependencies": {

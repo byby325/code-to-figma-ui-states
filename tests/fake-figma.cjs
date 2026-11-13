@@ -1,4 +1,4 @@
-// Minimal Figma Plugin API mock: implements only the parts board-skeleton.js and audit.js use,
+// Minimal Figma Plugin API mock: implements only the parts board-skeleton.js, screenshot-slots.js and audit.js use,
 // to catch runtime errors and board structure problems without Figma. Layout is only a rough estimate (Auto Layout sums its children) and is not guaranteed to match Figma.
 let seq = 1;
 const CHAR_W = 0.62; // Average character width ≈ font size × 0.62 (CJK about 1.0, Latin letters and digits about 0.55; a conservative value)
@@ -68,7 +68,7 @@ function relayoutUp(n) {
 const loaded = new Set();
 const key = f => `${f.family}/${f.style}`;
 
-function makeFigma({ fonts }) {
+function makeFigma({ fonts, images = {} }) {
   const page = new Node('PAGE'); page.name = 'Page 1';
   page.appendChild = function (n) { Node.prototype.appendChild.call(this, n); };
   const root = { children: [page] };
@@ -85,6 +85,9 @@ function makeFigma({ fonts }) {
     createText: () => create('TEXT'),
     createSection: () => create('SECTION'),
     createFrame: () => create('FRAME'),
+    createRectangle: () => create('RECTANGLE'),
+    // images: { <hash>: { width, height } }, standing in for what upload_assets puts in the file
+    getImageByHash: hash => (images[hash] ? { getSizeAsync: async () => images[hash] } : null),
     createAutoLayout(dir, props) {
       if (typeof dir === 'object') { props = dir; dir = 'HORIZONTAL'; }
       const f = create('FRAME'); f.layoutMode = dir || 'HORIZONTAL'; f.primaryAxisSizingMode = 'AUTO'; f.counterAxisSizingMode = 'AUTO'; f.itemSpacing = 0;
