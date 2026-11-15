@@ -51,6 +51,14 @@ Each card on the board says **trigger; result** ("API returns 403; lock icon, ex
 
 **Codex**: run `/plugins`, add the `byby325/code-to-figma-ui-states` marketplace, install `code-to-figma-ui-states`.
 
+**Other agents (Cursor, Gemini CLI and more)**, as plain skills with the [`skills`](https://skills.sh) CLI:
+
+```bash
+npx skills add byby325/code-to-figma-ui-states
+```
+
+Install all four skills together: they link to each other, so one on its own is missing the files it points to.
+
 **Or paste this into your agent:**
 
 ```text

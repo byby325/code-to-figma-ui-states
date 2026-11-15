@@ -55,6 +55,14 @@
 
 **Codex**：輸入 `/plugins`，加入 `byby325/code-to-figma-ui-states` 這個 marketplace，安裝 `code-to-figma-ui-states`。
 
+**其他 agent（Cursor、Gemini CLI 等）**：用 [`skills`](https://skills.sh) CLI 裝成一般的 skill：
+
+```bash
+npx skills add byby325/code-to-figma-ui-states
+```
+
+四個 skill 要一起裝：它們互相引用，只裝一個會缺少它指向的檔案。
+
 **或把這段貼給你的 agent：**
 
 ```text
