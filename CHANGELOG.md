@@ -12,6 +12,12 @@
 - Verified in a real Figma file (Starter plan, Full seat): a React orders page with four states and two gap cards took 2 counted calls. This was also the first real run of `board-skeleton.js` and of an English board
 - `scale-guard.md` records two measurements: the call budget is counted per plan (team), and `await section.screenshot()` inside the audit call replaces a separate `get_screenshot`
 
+### React rebuild verified in Figma
+
+- The Vite + React 19 + Radix + Tailwind 4 demo (four states of an order list) is rebuilt in Figma: 0.02–0.12% different from the browser, no text or box drift, 13 components with variants. The baseline is in `evals/trials.json`. The Next.js App Router case is still verified through capture only
+- The screens were built into slots that first held browser screenshots, so upgrading a Route C card to editable layers is verified too. `al-build.js` now drops "(browser screenshot)" from the slot's layer name when it does
+- `audit-screens.js` no longer counts an icon's frame (only vector shapes inside) as a container without Auto Layout; a screen with a few icons was flagged for a low Auto Layout ratio
+
 ### Tests
 
 - `board-skeleton.test.cjs`: 16 cases (was 13), adding empty slots in the audit and screenshot slots on English and zh-TW boards

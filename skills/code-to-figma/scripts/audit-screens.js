@@ -41,7 +41,9 @@ for (const { id, root, w } of screens) {
   const groupsIn = root.findAllWithCriteria({ types: ['GROUP'] }).filter(g => !inInstance(g) && !g.children.some(k => k.isMask)).length;
   if (groupsIn) issues.push(`${id}: the screen has ${groupsIn} Groups; change them to frames/Auto Layout`);
   if (root.type !== 'INSTANCE' && !root.findAllWithCriteria({ types: ['INSTANCE'] }).length) issues.push(`${id}: the screen uses no component instances`);
-  const frames = root.findAllWithCriteria({ types: ['FRAME', 'COMPONENT'] }).filter(f => f.children.filter(c => c.visible).length >= 2);
+  // An icon's frame holds only vector shapes at fixed positions; it is not a layout container
+  const SHAPES = ['VECTOR', 'BOOLEAN_OPERATION', 'ELLIPSE', 'LINE', 'POLYGON', 'STAR'];
+  const frames = root.findAllWithCriteria({ types: ['FRAME', 'COMPONENT'] }).filter(f => f.children.filter(c => c.visible).length >= 2 && !f.children.every(c => SHAPES.includes(c.type)));
   const al = frames.filter(f => f.layoutMode !== 'NONE').length;
   containers += frames.length; autoLayout += al;
   if (frames.length >= 5 && al / frames.length < 0.6) issues.push(`${id}: only ${al}/${frames.length} containers use Auto Layout`);

@@ -625,6 +625,8 @@ async function __alBuild(data, opts) {
     slot.children.forEach(k => k.remove());
     slot.appendChild(root); root.x = 0; root.y = 0;
     slot.placeholder = false; slot.fills = []; slot.cornerRadius = 0; slot.resize(root.width, root.height);
+    // A slot that held a browser screenshot (state board Route C) now holds layers: drop the note from its name
+    slot.name = slot.name.replace(/ ?[(\uff08](?:browser screenshot|\u700f\u89bd\u5668\u622a\u5716)[)\uff09]$/, '');
   } else {
     // No card slot (standalone code to figma): screens are laid out left to right in the section; a rebuilt screen keeps its position
     const others = board.children.filter(k => k !== root && (!prevNode || k !== prevNode));

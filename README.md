@@ -98,7 +98,7 @@ The board, the gap check and the wireframes are the same. Each card shows a 2x s
 ## What's verified
 
 - **Vue 3:** five projects rebuilt in Figma and diffed against the browser: SCSS, Tailwind, Playwright fixtures, Nuxt (full page) and frappe-ui (oklch colors, CSS-mask icons, intercepted APIs)
-- **React 18 and 19:** component detection is tested against real React (function and class components, `memo`, `forwardRef`, Radix `asChild`, providers, styled-components, production builds) and on two apps: Vite + Radix + Tailwind 4, and Next.js App Router, where Server Component names come through too. These are verified up to capture; Figma rebuild baselines for React aren't recorded yet
+- **React 18 and 19:** component detection is tested against real React (function and class components, `memo`, `forwardRef`, Radix `asChild`, providers, styled-components, production builds) and on two apps: Vite + Radix + Tailwind 4, and Next.js App Router, where Server Component names come through too. The Vite app is rebuilt in Figma and diffed against the browser (four screens, 0.02–0.12% different); the Next.js app is verified up to capture
 
 - **Screenshot boards (0.8.0):** run end to end in a real Figma file on a free Starter plan: a React orders page with four states and two gap cards, built and audited in 2 counted calls
 

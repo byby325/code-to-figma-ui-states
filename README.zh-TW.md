@@ -128,7 +128,7 @@ rm -rf ~/.claude/skills/figma-state-board ~/.codex/skills/figma-state-board
 ## 驗證範圍
 
 - **Vue 3**：五種專案在 Figma 重建並和瀏覽器比對過：SCSS、Tailwind、Playwright fixture、Nuxt 全頁，以及 frappe-ui（oklch 色票、CSS mask 圖示、攔截後端 API）
-- **React 18、19**：元件偵測用真的 React 測過（function、class component、`memo`、`forwardRef`、Radix 的 `asChild`、Provider、styled-components、production build），也在兩個專案上跑過：Vite + Radix + Tailwind 4，以及 Next.js App Router（Server Component 的名稱也抓得到）。目前驗證到擷取為止，還沒有在 Figma 重建的基準
+- **React 18、19**：元件偵測用真的 React 測過（function、class component、`memo`、`forwardRef`、Radix 的 `asChild`、Provider、styled-components、production build），也在兩個專案上跑過：Vite + Radix + Tailwind 4，以及 Next.js App Router（Server Component 的名稱也抓得到）。Vite 專案已在 Figma 重建並和瀏覽器比對（四張畫面，差異 0.02–0.12%）；Next.js 專案驗證到擷取為止
 - **截圖版情境稿（0.8.0）**：在免費 Starter 方案的真實 Figma 檔完整跑過：React 訂單頁的四個狀態加兩張缺漏卡，建板和驗收共用 2 次計額度的呼叫
 
 結果和基準在 [evals/trials.json](skills/code-to-figma/evals/trials.json)。Svelte、Angular 等框架的元件邊界還沒支援（仍會偵測重複結構），原生 App、Canvas 繪製的畫面不適用。已知限制列在 [code-to-figma/SKILL.md](skills/code-to-figma/SKILL.md)。

@@ -127,9 +127,9 @@
       ],
       "baseline": {
         "screens": 4,
-        "diffPercent": null,
+        "diffPercent": [0.12, 0.02, 0.02, 0.02],
         "colorBinding": null,
-        "note": "0.6.0: only capture and packing were done (al-capture, al-pack), and the component names on every screen were checked one by one; not yet built in Figma; fill in diffPercent next time"
+        "note": "0.8.0 (2026-11-14): all four screens built in Figma into state board slots that first held browser screenshots. al-diff: 0.12% (O01), 0.02% (O02, O03, O04), median 0.02%. No text or box drift, every container with data layout is Auto Layout, 13 components (Button x4, Badge x3, OrderRow x2, Skeleton x3, App x4 variants; ErrorState, EmptyState, LoadingRows, 5 icons), 491 nodes, no unused components. No design system, so no colors are bound. audit-screens flagged O04 for icon frames counted as containers; fixed in the same version"
       }
     },
     {
