@@ -5,7 +5,7 @@
 **Find the error, empty and loading screens your prototype forgot, then see every state of the feature on one Figma canvas.**
 
 [![test](https://github.com/byby325/code-to-figma-ui-states/actions/workflows/test.yml/badge.svg)](https://github.com/byby325/code-to-figma-ui-states/actions/workflows/test.yml)
-[![version](https://img.shields.io/badge/version-0.8.0-informational)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-0.8.1-informational)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![works with Claude Code | Codex](https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex-D97757)
 

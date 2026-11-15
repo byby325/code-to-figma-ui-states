@@ -153,12 +153,15 @@ async function main() {
       const r = await capture(page, id, { ...config, out, fullPage: card.fullPage !== undefined ? card.fullPage : config.fullPage });
       stats.push(r); console.log(JSON.stringify(r));
     } catch (e) {
-      stats.push({ id, error: e.message.slice(0, 300) });
-      console.log('FAIL', id, e.message.slice(0, 300).replace(/\n/g, ' '));
+      const message = String((e && e.message) || e).slice(0, 300);
+      stats.push({ id, error: message });
+      console.log('FAIL', id, message.replace(/\n/g, ' '));
     }
     await context.close();
   }
   await browser.close();
+  // capture() creates the folder; when every card failed before that (dev server not running), it isn't there yet
+  fs.mkdirSync(out, { recursive: true });
   fs.writeFileSync(path.join(out, only.length ? 'stats-partial.json' : 'stats.json'), JSON.stringify(stats, null, 1));
   const failed = stats.filter(s => s.error).length;
   console.log(`DONE ${stats.length} screens, ${failed} failed, output in ${out}`);

@@ -11,6 +11,8 @@ let chromium;
 try { ({ chromium } = require('playwright')); } catch (e) {
   console.log('SKIP playwright not found: run npm i -D playwright, then try again'); process.exit(0);
 }
+const { spawnSync } = require('child_process');
+const SCRIPT = path.join(__dirname, '..', 'skills', 'code-to-figma', 'scripts', 'al-capture.cjs');
 const { capture } = require(path.join(__dirname, '..', 'skills', 'code-to-figma', 'scripts', 'al-capture.cjs'));
 
 const PAGE = h => `<!doctype html><html><body style="margin:0"><div style="height:${h}px;background:linear-gradient(#fff,#36c)">Orders</div></body></html>`;
@@ -61,6 +63,18 @@ function jpegSize(file) {
     async 'shotOnly warns when the screen itself is longer than 4096px'() {
       const r = await run('S03', { dpr: 2, height: 5000, fullPage: true, shotOnly: true });
       assert.ok(r.warnings.some(w => w.includes('4096')), JSON.stringify(r.warnings));
+    },
+    async 'CLI: when every card fails before capture, stats.json is still written'() {
+      // Nothing listens on port 9, the same as a dev server that isn't running
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'al-capture-cli-'));
+      fs.writeFileSync(path.join(dir, 'config.cjs'), `module.exports = { url: 'http://127.0.0.1:9', project: ${JSON.stringify(path.join(__dirname, '..'))}, viewport: { width: 400, height: 300 }, cards: { X01: { url: '/' } } };`);
+      const run = spawnSync(process.execPath, [SCRIPT, path.join(dir, 'config.cjs')], { encoding: 'utf8' });
+      const stats = path.join(dir, 'capture', 'stats.json');
+      assert.strictEqual(run.status, 1, run.stderr);
+      assert.ok(fs.existsSync(stats), `no stats.json: ${run.stderr.slice(0, 300)}`);
+      assert.ok(JSON.parse(fs.readFileSync(stats, 'utf8'))[0].error);
+      assert.ok(/DONE 1 screens, 1 failed/.test(run.stdout), run.stdout);
+      fs.rmSync(dir, { recursive: true, force: true });
     },
   };
   let failed = 0;

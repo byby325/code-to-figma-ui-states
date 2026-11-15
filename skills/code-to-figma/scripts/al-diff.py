@@ -6,12 +6,15 @@
 #
 # When you only have group screenshots, put crops.json in FIGMA_DIR: {"M01": ["group.png", x, y]}. Each screen is cropped out before comparing,
 # and the closest position within 14px up or down is searched (card positions in a group screenshot are not always whole numbers).
+# A Figma screenshot at another scale (e.g. a 2x export) is scaled to the browser width. If its height then differs, the two are compared
+# top-aligned and the missing or extra part counts as difference; the report lists these screens under "Size mismatch".
 import json, os, sys
 from PIL import Image, ImageChops, ImageFilter
 
 NOISE_THRESHOLD = 48  # 0-255; differences below this are treated as font anti-aliasing and not counted
 BLUR_RADIUS = 1.2  # Blur first so edge differences within 1px are not counted
 CROP_SEARCH = 14
+SIZE_TOLERANCE = 2  # px of height difference, after scaling to the browser width, that still counts as the same size
 WORST_N = 4
 BANDS_N = 3  # How many of the largest-difference bands to list and crop per screen
 BAND_PAD = 60
@@ -63,7 +66,7 @@ def save_bands(card, b, figma, ref, report_dir):
     return out
 
 
-def load_figma(figma_dir, crops, card, ref):
+def load_figma(figma_dir, crops, card, ref, mismatched):
     if card in crops:
         name, x, y = crops[card]
         group = Image.open(os.path.join(figma_dir, name)).convert('RGB')
@@ -71,8 +74,20 @@ def load_figma(figma_dir, crops, card, ref):
     path = os.path.join(figma_dir, card + '.png')
     if not os.path.exists(path):
         return None
-    img = Image.open(path).convert('RGB')
-    return img if img.size == ref.size else img.resize(ref.size)
+    return fit(Image.open(path).convert('RGB'), ref, card, mismatched)
+
+
+def fit(img, ref, card, mismatched):
+    if img.size == ref.size:
+        return img
+    height = round(img.height * ref.width / img.width)
+    if abs(height - ref.height) <= SIZE_TOLERANCE:
+        return img.resize(ref.size)
+    # Different proportions: stretching would smear the whole screen into small offsets and hide that the height is wrong
+    mismatched.append(f'{card}: Figma {img.width}x{img.height}, browser {ref.width}x{ref.height}')
+    canvas = Image.new('RGB', ref.size, 'magenta')
+    canvas.paste(img.resize((ref.width, height)), (0, 0))
+    return canvas
 
 
 def main():
@@ -82,13 +97,13 @@ def main():
     report_dir = sys.argv[3] if len(sys.argv) > 3 else figma_dir
     crops_path = os.path.join(figma_dir, 'crops.json')
     crops = json.load(open(crops_path)) if os.path.exists(crops_path) else {}
-    results, missing = [], []
+    results, missing, mismatched = [], [], []
     for f in sorted(os.listdir(shot_dir)):
         card, ext = os.path.splitext(f)
         if ext != '.jpg':
             continue
         ref = Image.open(os.path.join(shot_dir, f)).convert('RGB')
-        figma = load_figma(figma_dir, crops, card, ref)
+        figma = load_figma(figma_dir, crops, card, ref, mismatched)
         if figma is None:
             missing.append(card)
             continue
@@ -103,6 +118,10 @@ def main():
     print('Median', sorted(r[0] for r in results)[len(results) // 2], '%')
     if missing:
         print('No Figma screenshot:', ' '.join(missing))
+    if mismatched:
+        print('Size mismatch (compared top-aligned at the browser width; fix the screen height first, the ratio above is not comparable):')
+        for line in mismatched:
+            print('  ' + line)
     # For high-difference screens, look at these crops first, then check the source code for the cause; don't guess from the whole thumbnail
     for pct, card, b, figma, ref in results[:WORST_N]:
         print(f'{card} band crops (top: browser, bottom: Figma):', ' '.join(save_bands(card, b, figma, ref, report_dir)))

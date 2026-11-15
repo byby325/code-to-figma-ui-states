@@ -21,6 +21,7 @@ Better to leave something unbound than to change the screen. The tool does only 
 |---|---|---|
 | Color | Bind only on an exact match, including opacity. Semi-transparent colors need a token with that transparency, because Figma resets opacity to 1 when binding | Don't snap to the nearest color |
 | Radius, stroke, spacing, type size | Bind only when the value is exactly equal | Don't change 3px to 2px or 4px |
+| Alias tokens | A token that points at another token (a semantic token over a primitive) counts with the value at the end of the chain. When a value has both, the token with its own value wins; the alias is used only for values nothing else has | Don't pick between two semantic tokens with the same value by guessing; report it |
 | Text style | Bind only when font, size and line height are all equal | If the font differs, bind only the size |
 | Icon | Swap only when the library has a component with the same name; accept old names only for mappings confirmed to have the same purpose | Don't use an icon with a similar meaning but a different look |
 | Component | Swap only when the library component looks the same as the product's; keep the product's size | If it looks different, keep the local component and don't change the product screen |
@@ -60,7 +61,9 @@ The `stat` returned by `__alBuild` has the binding results: `boundColors`, `boun
 return await __alBind(['<frame id>'], { tokens: ['<library name>'] });
 ```
 
-It returns `boundColors`, `boundLayout`, and `unboundColors` (colors with no token).
+It returns `boundColors`, `boundLayout`, and `unboundColors` (colors with no token). `skippedText` counts text whose font could not be loaded, so its size was left unbound.
+
+When screens are built with `__alBuild`, the token table is cached in `_registry` so later screens don't import every variable again. It is rebuilt when the preset lists different token libraries. After the library publishes new or changed tokens, pass `refreshTokens: true` to the next `__alBuild` call.
 
 ## Components
 

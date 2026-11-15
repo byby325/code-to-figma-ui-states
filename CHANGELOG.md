@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.8.1
+
+Fixes from a review of every script. Tested locally; none of them has been re-run in real Figma yet.
+
+- `al-extract.js`: gradients and shadows whose colors are `oklch()`, `color()` and the like (Tailwind 4 palettes) are extracted; before, the gradient was dropped and the shadow turned black. A direction written as `to right in oklab` keeps its direction
+- `al-extract.js`: a password field is extracted as dots, one per character, and its value never reaches the JSON or Figma. `range`, `color` and `file` inputs no longer get their value drawn as text
+- `al-capture.cjs`: when every card fails before the capture (dev server not running), `stats.json` and the summary line are still written instead of an `ENOENT` stack trace
+- `board-skeleton.js`, `audit.js`: a word shaped like a card ID counts as a reference only when its letters are a prefix the board uses. A description that mentions `ERR42` or `IE11` no longer stops the board from being built
+- `al-build.js`: text with CJK characters uses a CJK font the file actually has (Korean and Japanese text try their own fonts first), and keeps the page's font when that one covers CJK. Before, it always asked for Noto Sans TC and the build failed without it
+- `al-build.js`: a library button variant is matched on whole `Prop=Value` pairs, so `Size=S` no longer picks `Size=Small`
+- `al-bind.js`: alias tokens (a semantic token pointing at a primitive) are read. A value that has a token of its own still binds to that one; the alias is used only for values nothing else has
+- `al-bind.js`: the token table cached in `_registry` is rebuilt when the preset lists different libraries, and `__alBuild` takes `refreshTokens: true` after the library publishes new tokens
+- `al-bind.js`: `__alBind` on an existing screen loads the text's fonts before binding a font size; text whose font can't be loaded is skipped and counted in `skippedText`
+- `al-diff.py`: a Figma screenshot with a different height is no longer stretched to fit. It is compared top-aligned and listed under "Size mismatch"
+- New `tests/bind.test.cjs`; more cases in the extract, capture and board tests
+
 ## 0.8.0
 
 ### Renamed to code-to-figma-ui-states

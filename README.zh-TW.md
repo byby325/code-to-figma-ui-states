@@ -5,7 +5,7 @@
 **找出原型漏掉的錯誤、空狀態和載入畫面，再把功能的所有狀態攤在同一張 Figma 畫布上。**
 
 [![test](https://github.com/byby325/code-to-figma-ui-states/actions/workflows/test.yml/badge.svg)](https://github.com/byby325/code-to-figma-ui-states/actions/workflows/test.yml)
-[![version](https://img.shields.io/badge/version-0.8.0-informational)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-0.8.1-informational)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![works with Claude Code | Codex](https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex-D97757)
 

@@ -35,6 +35,10 @@
     if (a === 0 && !keepClear) return null;
     return [R3(p[0] / 255), R3(p[1] / 255), R3(p[2] / 255), R3(a)];
   }
+  // Any CSS color function. Chrome keeps oklch(), color() and the like in computed gradients and shadows (Tailwind 4 palettes)
+  const COLOR_FN = /\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\((?:[^()]|\([^()]*\))*\)/;
+  // "to right in oklab", "in oklch longer hue": the interpolation color space has no Figma counterpart, so drop it and keep the direction
+  const dropColorSpace = s => s.replace(/(^|\s)in\s+[\w-]+(?:\s+(?:shorter|longer|increasing|decreasing)\s+hue)?\s*$/, '').trim();
   function splitTop(s) {
     const out = []; let d = 0, cur = '';
     for (const ch of s) { if (ch === '(') d++; if (ch === ')') d--; if (ch === ',' && d === 0) { out.push(cur.trim()); cur = ''; } else cur += ch; }
@@ -76,17 +80,17 @@
     if (!m) return null;
     const parts = splitTop(m[2]); let a = 180, geo = null;
     if (m[1] === 'linear') {
-      const p0 = parts[0];
-      if (!/rgb/.test(p0)) {
+      const p0 = dropColorSpace(parts[0]);
+      if (!COLOR_FN.test(p0)) {
         if (/deg|turn|rad/.test(p0)) a = parseFloat(p0) * (p0.includes('turn') ? 360 : p0.includes('rad') ? 57.2958 : 1);
         else { const map = { 'to top': 0, 'to right': 90, 'to bottom': 180, 'to left': 270, 'to top right': 45, 'to right top': 45, 'to bottom right': 135, 'to right bottom': 135, 'to bottom left': 225, 'to left bottom': 225, 'to top left': 315, 'to left top': 315 }; a = map[p0] ?? 180; }
         parts.shift();
       }
-    } else if (!/rgb/.test(parts[0])) geo = radialGeom(parts.shift(), w, h);
+    } else if (!COLOR_FN.test(parts[0])) geo = radialGeom(dropColorSpace(parts.shift()), w, h);
     const stops = [];
     parts.forEach(p => {
-      const cm = p.match(/rgba?\([^)]*\)/); if (!cm) return;
-      const c = color(cm[0], true); const rest = p.replace(cm[0], '').trim();
+      const cm = p.match(COLOR_FN); if (!cm) return;
+      const c = color(cm[0], true); if (!c) return; const rest = p.replace(cm[0], '').trim();
       const pos = rest.match(/(-?[\d.]+)%/g);
       if (pos) pos.forEach(q => stops.push([R3(parseFloat(q) / 100), ...c]));
       else stops.push([null, ...c]);
@@ -202,7 +206,7 @@
   function effects(cs) {
     const out = [];
     if (cs.boxShadow && cs.boxShadow !== 'none') splitTop(cs.boxShadow).forEach(s => {
-      const cm = s.match(/rgba?\([^)]*\)/); const c = cm ? color(cm[0], true) : [0, 0, 0, 0.5];
+      const cm = s.match(COLOR_FN); const c = (cm && color(cm[0], true)) || [0, 0, 0, 0.5];
       const nums = s.replace(cm ? cm[0] : '', '').match(/-?[\d.]+px|-?[\d.]+(?=\s|$)/g) || [];
       const [x, y, b, sp] = nums.map(px).concat([0, 0, 0, 0]);
       out.push([R1(x), R1(y), R1(b), R1(sp), ...c, /inset/.test(s) ? 1 : 0]);
@@ -519,7 +523,7 @@
     const al = hostCs.textAlign; j.al = /center/.test(al) ? 'C' : /right|end/.test(al) ? 'R' : /justify/.test(al) ? 'J' : 'L';
     if (base.u) j.u = 1;
     const tsw = px(hostCs.webkitTextStrokeWidth); if (tsw) j.ts = [R1(tsw), ...(color(hostCs.webkitTextStrokeColor) || [0, 0, 0, 1])];
-    if (hostCs.textShadow && hostCs.textShadow !== 'none') { const cm = hostCs.textShadow.match(/rgba?\([^)]*\)/); const nums = hostCs.textShadow.replace(cm ? cm[0] : '', '').match(/-?[\d.]+px/g) || []; j.sh = [...nums.map(px).slice(0, 3).map(R1), ...(cm ? color(cm[0], true) : [0, 0, 0, 0.5])]; }
+    if (hostCs.textShadow && hostCs.textShadow !== 'none') { const cm = hostCs.textShadow.match(COLOR_FN); const nums = hostCs.textShadow.replace(cm ? cm[0] : '', '').match(/-?[\d.]+px/g) || []; j.sh = [...nums.map(px).slice(0, 3).map(R1), ...((cm && color(cm[0], true)) || [0, 0, 0, 0.5])]; }
     // style runs that differ from base
     let off = -lead; const segs = [];
     for (const r of runs) {
@@ -955,7 +959,9 @@
       if (cs.appearance !== 'none') kids.push(...nativeCheck(el, j, cs));
     } else if (['input', 'textarea'].includes(tag)) {
       // An input's value/placeholder isn't in a DOM text node, so build the text directly from the content box
-      const val = el.value || el.placeholder || '';
+      // range, color, file and the like draw their value as a control, not as text; a password shows one dot per character and must never leave the page as text
+      const noText = tag === 'input' && /^(?:range|color|file|hidden|image)$/.test(el.type);
+      const val = noText ? '' : el.type === 'password' && el.value ? '\u2022'.repeat(el.value.length) : el.value || el.placeholder || '';
       if (val) {
         const pcs = el.value ? cs : getComputedStyle(el, '::placeholder');
         const fsz = px(cs.fontSize) || 12, lh = cs.lineHeight === 'normal' ? R1(fsz * 1.4) : R1(px(cs.lineHeight));

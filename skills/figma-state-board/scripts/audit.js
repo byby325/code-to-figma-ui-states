@@ -92,7 +92,9 @@ for (const g of groups) {
     else screens.empty.push(id);
   }
 }
-for (const [from, to] of refs) if (to !== from && !ids.has(to)) issues.push(`${from}: refers to ${to}, which is not on the board`);
+// A word shaped like a card ID is a reference only when its letters are a prefix this board uses ("ERR42" and "IE11" are not cards)
+const prefixes = new Set([...ids.keys()].map(id => id.replace(/\d+$/, '')));
+for (const [from, to] of refs) if (to !== from && !ids.has(to) && prefixes.has(to.replace(/\d+$/, ''))) issues.push(`${from}: refers to ${to}, which is not on the board`);
 if (!groups.some(g => g.children[0] && g.children[0].type === 'TEXT' && isGapTitle(g.children[0].characters))) issues.push('No gap check group');
 const num = (s, k) => { for (const l of LABELS[k]) { const m = s.match(new RegExp(esc(l) + '\\s*(\\d+)')); if (m) return +m[1]; } return null; };
 const summary = section.children.find(n => n.type === 'TEXT' && num(n.characters, 'prototype') !== null && num(n.characters, 'suggested') !== null);

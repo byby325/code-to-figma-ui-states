@@ -5,9 +5,25 @@ function __alBinder(libs, reg, stat) {
   const importVar = async key => varCache[key] || (varCache[key] = await figma.variables.importVariableByKeyAsync(key));
   const hexOf = c => ['r', 'g', 'b'].map(k => Math.round(c[k] * 255).toString(16).padStart(2, '0')).join('').toUpperCase();
   // Only exact matches, never the nearest value: for tokens with a hex in the name, read the name; import the rest and read their values
+  // A token whose value is an alias (a semantic token pointing at a primitive) takes the value at the end of the chain
+  const firstMode = v => v.valuesByMode[Object.keys(v.valuesByMode)[0]];
+  async function resolved(v) {
+    let val = firstMode(v), alias = false;
+    for (let hop = 0; val && val.type === 'VARIABLE_ALIAS' && hop < 8; hop++) {
+      alias = true;
+      let target = null;
+      try { target = await figma.variables.getVariableByIdAsync(val.id); } catch (e) { /* the target isn't reachable from this file */ }
+      val = target ? firstMode(target) : null;
+    }
+    return { val, alias };
+  }
   async function loadTokens() {
-    if (reg.__tokens) return reg.__tokens;
-    const t = { color: {}, radius: {}, stroke: {}, space: {}, font: {} };
+    // The cache is only good for the libraries it was built from: a preset that lists another library rebuilds it, and so does a cache from before 0.8.1
+    const source = (libs.tokens || []).join('|');
+    if (reg.__tokens && reg.__tokens.__for === source) return reg.__tokens;
+    const t = { color: {}, radius: {}, stroke: {}, space: {}, font: {}, __for: source };
+    // Tokens with a value of their own come first; an alias token is used only for a value nothing else has, so bindings made before aliases were read stay the same
+    const viaAlias = { color: {}, radius: {}, stroke: {}, space: {}, font: {} };
     for (const c of await figma.teamLibrary.getAvailableLibraryVariableCollectionsAsync()) {
       if (!libs.tokens.includes(c.libraryName)) continue;
       for (const v of await figma.teamLibrary.getVariablesInLibraryCollectionAsync(c.key)) {
@@ -15,11 +31,12 @@ function __alBinder(libs, reg, stat) {
         if (inName) { t.color[inName[1].toUpperCase()] = v.key; continue; }
         const group = v.resolvedType === 'COLOR' ? 'color' : v.name.startsWith('borderRadius') ? 'radius' : v.name.startsWith('border') ? 'stroke' : v.name.startsWith('spacing') ? 'space' : v.name.startsWith('font-size') ? 'font' : null;
         if (!group) continue;
-        const iv = await importVar(v.key), val = iv.valuesByMode[Object.keys(iv.valuesByMode)[0]];
-        if (group !== 'color') { if (typeof val === 'number') t[group][val] = v.key; }
-        else if (val && val.r !== undefined) t.color[hexOf(val) + (val.a < 1 ? '@' + val.a.toFixed(2) : '')] = v.key;
+        const { val, alias } = await resolved(await importVar(v.key)), into = alias ? viaAlias : t;
+        if (group !== 'color') { if (typeof val === 'number') into[group][val] = v.key; }
+        else if (val && val.r !== undefined) into.color[hexOf(val) + (val.a < 1 ? '@' + val.a.toFixed(2) : '')] = v.key;
       }
     }
+    for (const group of Object.keys(viaAlias)) for (const [value, key] of Object.entries(viaAlias[group])) if (!(value in t[group])) t[group][value] = key;
     reg.__tokens = t;
     return t;
   }
@@ -39,6 +56,11 @@ function __alBinder(libs, reg, stat) {
   async function bindField(n, field, map) {
     const v = n[field];
     if (typeof v !== 'number' || v <= 0 || !map[v] || (n.boundVariables && n.boundVariables[field])) return;
+    // Text properties can't change before the fonts are loaded. al-build has loaded them; __alBind on an existing screen has not
+    if (field === 'fontSize') {
+      try { for (const s of n.getStyledTextSegments(['fontName'])) await figma.loadFontAsync(s.fontName); }
+      catch (e) { stat.skippedText = (stat.skippedText || 0) + 1; return; }
+    }
     n.setBoundVariable(field, await importVar(map[v])); stat.boundLayout++;
   }
   // Bind after building: inside instances bind only colors, since layout values follow the main component; in library instances bind only the changed vector colors

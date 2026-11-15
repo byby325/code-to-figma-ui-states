@@ -1,6 +1,6 @@
 {
   "name": "code-to-figma-ui-states",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Figma toolkit for product projects: inventory every state of a feature, rebuild running web screens as editable Auto Layout and components, bind them to a design system, and assemble a state board that flags missing error, empty and loading screens.",
   "author": {
     "name": "Dilly Chen"

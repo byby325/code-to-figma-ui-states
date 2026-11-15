@@ -168,7 +168,13 @@ const tests = {
     await assert.rejects(build({ ...DESKTOP, gaps: { ...DESKTOP.gaps, cards: [{ ...DESKTOP.gaps.cards[0], id: 'L01' }] } }), /Duplicate/);
   },
   async 'reference to a missing card: nothing is written'() {
-    await assert.rejects(build({ ...DESKTOP, gaps: { ...DESKTOP.gaps, cards: [{ ...DESKTOP.gaps.cards[0], related: 'Affects Z99' }] } }), /Z99/);
+    await assert.rejects(build({ ...DESKTOP, gaps: { ...DESKTOP.gaps, cards: [{ ...DESKTOP.gaps.cards[0], related: 'Affects L09' }] } }), /L09/);
+  },
+  async 'error codes and the like in a description are not card references'() {
+    // ERR42, IE11 and UTF16 look like card IDs, but no card on this board uses those letters
+    const cards = [{ ...DESKTOP.gaps.cards[0], desc: 'API returns ERR42 on IE11; the body is UTF16.', related: 'Affects L02' }, DESKTOP.gaps.cards[1]];
+    const { a } = await build({ ...DESKTOP, gaps: { ...DESKTOP.gaps, cards } });
+    assert.deepStrictEqual(a.issues, []);
   },
   async 'gap card without a basis: nothing is written'() {
     await assert.rejects(build({ ...DESKTOP, gaps: { ...DESKTOP.gaps, cards: [{ ...DESKTOP.gaps.cards[0], basis: '' }] } }), /basis/);

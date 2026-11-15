@@ -1,6 +1,6 @@
 // al-build.js — eval'd inside use_figma; builds the layout tree produced by al-extract.js as Figma layers:
 // containers with an arrangement → auto layout frame; framework component roots and repeated same-structure siblings → component / instance (same name, different structure → variants).
-// Usage: await __alBuild(data, { boardId, slotId?, compSectionId?, withRef?, libs?, replace?, force? })
+// Usage: await __alBuild(data, { boardId, slotId?, compSectionId?, withRef?, libs?, refreshTokens?, replace?, force? })
 // boardId is the section that holds the screens; slotId is the screen frame of a state board card (without it, screens are laid out in the section). Pass withRef: true only for each device's representative screen
 
 // Uploaded temporary frames: ALDATA-<screen> is the data SVG, ALIMG-<screen>-<image ID> is an image. The layer name is the uploaded file name and may include the extension
@@ -80,6 +80,8 @@ async function __alBuild(data, opts) {
   // ---------- design system ----------
   // opts.libs is stored in _registry the first time it is passed; later batches in the same section don't need to pass it again (see figma-library-binding)
   if (opts.libs || data.libs) reg.__libs = opts.libs || data.libs;
+  // The token table is cached in _registry. Pass refreshTokens: true after the library published new or changed tokens
+  if (opts.refreshTokens) delete reg.__tokens;
   const libs = reg.__libs || null;
   const stat = { boundColors: 0, unboundColors: {}, boundLayout: 0, libIcons: 0, dsButtons: 0, localIcons: {} };
   const binder = libs ? __alBinder(libs, reg, stat) : null;
@@ -89,6 +91,8 @@ async function __alBuild(data, opts) {
   const hexOfArr = c => c.slice(0, 3).map(v => Math.round(v * 255).toString(16).padStart(2, '0')).join('').toUpperCase();
   const isLibIcon = j => !!(libs && libs.icons && j.k === 'S' && libs.icons[j.lib] && (!j.flip || (j.flip[0] === -1 && j.flip[3] === -1)));
   const buttonRule = j => (libs && libs.buttons && j.tag === 'button' && j.fl && j.fl[0].t === 'S' && (j.kids || []).some(k => k.k === 'T')) ? libs.buttons.rules[hexOfArr(j.fl[0].c)] || null : null;
+  // Compare whole "Prop=Value" pairs: a substring match takes "Size=Small" for Size=S and "Type=Primary Outline" for Type=Primary
+  const variantOf = (set, rule) => set.children.find(c => { const props = c.name.split(',').map(s => s.trim()); return Object.entries(rule).every(([k, val]) => props.includes(k + '=' + val)); });
   const setLabel = (n, s) => { const key = Object.keys(n.componentProperties).find(k => k.startsWith('Label')); if (key) n.setProperties({ [key]: s }); };
   // Library vectors may use fills or strokes; recolor both
   async function colorIcon(n, j) {
@@ -108,7 +112,7 @@ async function __alBuild(data, opts) {
   }
   async function dsButton(j, rule) {
     const set = await importSet(libs.buttons.set);
-    const v = set.children.find(c => Object.entries(rule).every(([k, val]) => c.name.includes(k + '=' + val)));
+    const v = variantOf(set, rule);
     if (!v) { log.warn.push('Button variant not found ' + JSON.stringify(rule)); return null; }
     const n = v.createInstance(); n.name = j.n;
     setLabel(n, j.kids.find(k => k.k === 'T').s);
@@ -143,15 +147,28 @@ async function __alBuild(data, opts) {
   };
   const isWidthVariant = s => /condensed|expanded|narrow|compressed|wide/i.test(s);
   const fontCache = {};
+  // Fonts with CJK glyphs, tried in order; only the ones this file can use are picked. A family the page already uses that covers CJK is kept
+  const CJK_FONTS = { kr: ['Noto Sans KR', 'Malgun Gothic'], jp: ['Noto Sans JP', 'Hiragino Sans', 'Yu Gothic'], han: ['Noto Sans TC', 'Noto Sans SC', 'Noto Sans HK', 'Noto Sans JP', 'PingFang TC', 'PingFang SC', 'Microsoft JhengHei', 'Microsoft YaHei'] };
+  const CJK_FAMILY = /Noto (?:Sans|Serif) (?:CJK )?(?:TC|SC|HK|JP|KR)|PingFang|JhengHei|YaHei|Hiragino|Source Han|Yu Gothic|Meiryo|Malgun|M PLUS|Zen /i;
+  let warnedCJK = false;
+  function cjkFont(text, known) {
+    const hangul = /[\u1100-\u11ff\u3130-\u318f\uac00-\ud7af]/.test(text), kana = /[\u3040-\u30ff]/.test(text);
+    if (!hangul && !kana && !/[\u3000-\u9fff\uff00-\uffef]/.test(text)) return null;
+    if (known && CJK_FAMILY.test(known)) return known;
+    const tried = [...(hangul ? CJK_FONTS.kr : []), ...(kana ? CJK_FONTS.jp : []), ...CJK_FONTS.han];
+    const found = tried.find(name => fam[name]);
+    if (!found && !warnedCJK) { warnedCJK = true; log.warn.push('No CJK font is available in this file (tried ' + tried.join(', ') + '); CJK text keeps the page font and may show missing glyphs'); }
+    return found || null;
+  }
   function pickFont(f, text) {
     const [family0, , weight, italic] = f;
-    const cjk = /[　-鿿＀-￯]/.test(text || '');
     // Thai and ฿ have no glyphs in fonts like Roboto, and Figma doesn't fall back to another font, so the text just disappears
     const thai = /[฀-๿]/.test(text || '') && fam['Noto Sans Thai'];
     // CSS font names are case-insensitive; a project may write arial
     const known = Object.keys(fam).find(k => k.toLowerCase() === family0.toLowerCase());
+    const cjk = cjkFont(text || '', known);
     const fallbackKey = Object.keys(FALLBACK).find(k => k.toLowerCase() === family0.toLowerCase());
-    let family = thai ? 'Noto Sans Thai' : cjk ? 'Noto Sans TC' : known ? known : (fallbackKey && fam[FALLBACK[fallbackKey]] ? FALLBACK[fallbackKey] : (fam['Roboto'] ? 'Roboto' : 'Inter'));
+    let family = thai ? 'Noto Sans Thai' : cjk ? cjk : known ? known : (fallbackKey && fam[FALLBACK[fallbackKey]] ? FALLBACK[fallbackKey] : (fam['Roboto'] ? 'Roboto' : 'Inter'));
     const key = family + '|' + weight + '|' + italic;
     if (fontCache[key]) return fontCache[key];
     const styles = fam[family] || ['Regular'];
@@ -457,7 +474,7 @@ async function __alBuild(data, opts) {
     }
     const rule = buttonRule(j);
     if (rule && n.type === 'INSTANCE') {
-      const set = await importSet(libs.buttons.set), v = set.children.find(c => Object.entries(rule).every(([k, val]) => c.name.includes(k + '=' + val)));
+      const set = await importSet(libs.buttons.set), v = variantOf(set, rule);
       const cur = await n.getMainComponentAsync();
       if (v && (!cur || cur.id !== v.id)) n.swapComponent(v);
       setLabel(n, j.kids.find(k => k.k === 'T').s);

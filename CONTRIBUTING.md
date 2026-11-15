@@ -31,6 +31,7 @@ The tests need no Figma account and use no MCP calls. They catch script errors, 
 | A framework adapter in `al-extract.js` | Test it against the real framework in the browser, like `tests/react.test.cjs` does for React 18 and 19, including its production build |
 | `al-build.js` or `al-extract.js` in a way that changes layout | Re-run every case in `skills/code-to-figma/evals/trials.json` in real Figma and update the baselines. A change often breaks only one kind of project |
 | `al-capture.cjs` | Add a case to `tests/capture.test.cjs` |
+| `al-bind.js` | Add a case to `tests/bind.test.cjs` |
 | `board-skeleton.js`, `screenshot-slots.js` or `audit.js` | Keep them consistent with `skills/figma-state-board/references/board-format.md`; add a test to `tests/board-skeleton.test.cjs` |
 | A `SKILL.md` description | `npm run test:fast` — an unquoted `: ` breaks YAML and the skill silently fails to load |
 | Anything user-visible | Add a line to `CHANGELOG.md` |

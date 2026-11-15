@@ -74,6 +74,9 @@ for (const c of allCards) {
   if (ids.has(c.id)) throw new Error(`Duplicate card ID ${c.id}`);
   ids.add(c.id);
 }
+// A word shaped like a card ID is a reference only when its letters are a prefix this board uses: "ERR42", "IE11" and "UTF16" in a description are not cards
+const prefixes = new Set([...ids].map(id => id.replace(/\d+$/, '')));
+const refsIn = s => [...s.matchAll(/\b([A-Z]{1,3})(\d{2})\b/g)].filter(r => prefixes.has(r[1])).map(r => r[1] + r[2]);
 for (const g of BOARD.groups) {
   if (!/^\d{2} · /.test(g.title)) throw new Error(`Group title "${g.title}" must be "NN · <name>"`);
   if (!g.viewport || !g.viewport.width) throw new Error(`${g.title} is missing viewport.width`);
@@ -84,9 +87,9 @@ for (const c of BOARD.gaps.cards) {
   if (!TAG_KEY[c.tag]) throw new Error(`Gap card ${c.id}: tag must be 'spec' or 'suggested'`);
   c.tag = TAG_KEY[c.tag];
   if (!c.basis) throw new Error(`Gap card ${c.id} has no basis`);
-  for (const r of `${c.desc} ${c.related || ''}`.matchAll(/\b([A-Z]{1,3}\d{2})\b/g)) if (!ids.has(r[1])) throw new Error(`${c.id} refers to ${r[1]}, which is not in the matrix`);
+  for (const r of refsIn(`${c.desc} ${c.related || ''}`)) if (!ids.has(r)) throw new Error(`${c.id} refers to ${r}, which is not in the matrix`);
 }
-for (const c of BOARD.groups.flatMap(g => g.cards)) for (const r of c.desc.matchAll(/\b([A-Z]{1,3}\d{2})\b/g)) if (!ids.has(r[1])) throw new Error(`${c.id} refers to ${r[1]}, which is not in the matrix`);
+for (const c of BOARD.groups.flatMap(g => g.cards)) for (const r of refsIn(c.desc)) if (!ids.has(r)) throw new Error(`${c.id} refers to ${r}, which is not in the matrix`);
 
 // Page: switch at most once
 if (BOARD.pageName) {

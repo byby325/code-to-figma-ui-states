@@ -18,6 +18,8 @@ const PAGE = `<!doctype html><html><head><style>
   .srgb { width: 200px; height: 40px; background: color(srgb 1 0.5 0); border: 2px solid color(srgb 0 0 1); }
   .rgb { width: 200px; height: 40px; background: rgb(10, 20, 30); }
   .clear { width: 200px; height: 40px; background: oklch(0.5 0.1 100 / 0); }
+  .grad { width: 200px; height: 40px; background: linear-gradient(to right in oklab, oklch(0.7 0.15 250), oklch(0.5 0.2 300)); box-shadow: 0 2px 4px oklch(0.7 0.15 250); }
+  .radial { width: 200px; height: 40px; background: radial-gradient(circle at center, color(srgb 1 0.5 0) 0%, rgb(10, 20, 30) 100%); }
   .lucide-bell { display: inline-block; width: 16px; height: 16px; background-color: rgb(187, 111, 10);
     -webkit-mask: url("${LUCIDE_BELL}") no-repeat center / 100%; mask: url("${LUCIDE_BELL}") no-repeat center / 100%; }
 </style></head><body>
@@ -26,6 +28,9 @@ const PAGE = `<!doctype html><html><head><style>
   <div class="rgb" id="c">rgb</div>
   <div class="clear" id="d">clear</div>
   <span class="lucide-bell" id="icon"></span>
+  <div class="grad" id="g">grad</div>
+  <div class="radial" id="r">radial</div>
+  <form style="background:#eee;padding:4px"><input type="password" id="pw" value="hunter2secret"><input type="range" id="rg" value="50"><input type="text" id="tx" value="plain value"></form>
   <div id="radix-_r_1_" class="inline-flex items-center px-2 animate-pulse" style="background:#eee;padding:4px">gen</div>
   <div id="main-nav" class="inline-flex items-center px-2" style="background:#eee;padding:4px">keep</div>
 </body></html>`;
@@ -69,6 +74,33 @@ function fillsOf(j) { return (j.fl || []).filter(f => f && Array.isArray(f.c)).m
       assert.ok(gen && keep, 'test nodes not found');
       assert.strictEqual(gen.n, 'div', `radix-_r_1_ or inline-flex was used as the name: ${gen.n}`);
       assert.strictEqual(keep.n, 'main-nav');
+    },
+    'gradient with oklch() stops and "in oklab" keeps its direction and colors': () => {
+      const g = byText('grad');
+      assert.ok(g, 'grad node not found');
+      const lin = (g.fl || []).find(f => f.t === 'L');
+      assert.ok(lin, `no linear gradient: ${JSON.stringify(g.fl)}`);
+      assert.strictEqual(lin.a, 90, 'to right should be 90deg');
+      assert.strictEqual(lin.s.length, 2);
+      assert.ok(near(lin.s[0].slice(1), [0.294, 0.639, 0.969], 0.03), `first stop: ${JSON.stringify(lin.s[0])}`);
+    },
+    'box-shadow with an oklch() color keeps the color and the offsets': () => {
+      const sh = (byText('grad').ef || [])[0];
+      assert.ok(sh, 'no shadow');
+      assert.deepStrictEqual(sh.slice(0, 4), [0, 2, 4, 0]);
+      assert.ok(near(sh.slice(4, 7), [0.294, 0.639, 0.969], 0.03), `shadow color: ${JSON.stringify(sh)}`);
+    },
+    'radial gradient with a color() stop is extracted': () => {
+      const rad = (byText('radial').fl || []).find(f => f.t === 'R');
+      assert.ok(rad && rad.s.length === 2, `no radial gradient: ${JSON.stringify(byText('radial').fl)}`);
+      assert.ok(near(rad.s[0].slice(1), [1, 0.5, 0]), `first stop: ${JSON.stringify(rad.s[0])}`);
+    },
+    'a password is extracted as dots, a range input has no text, a text input keeps its value': () => {
+      const texts = nodes.filter(j => j.k === 'T').map(j => j.s);
+      assert.ok(!JSON.stringify(data).includes('hunter2secret'), 'the password value is in the extracted data');
+      assert.ok(texts.includes('\u2022'.repeat(13)), `no dots for the password: ${JSON.stringify(texts)}`);
+      assert.ok(!texts.includes('50'), 'the range value became text');
+      assert.ok(texts.includes('plain value'));
     },
     'mask-image icon becomes an SVG colored with the background color': () => {
       const icon = nodes.find(j => j.k === 'S' && j.icon === 'lucide-bell');
