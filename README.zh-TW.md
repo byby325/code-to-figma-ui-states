@@ -11,7 +11,11 @@
 
 [English](README.md) · 繁體中文
 
-<!-- TODO：30–45 秒的展示：repo → agent 給出狀態矩陣 → Figma 情境稿上的藍、橘缺漏標籤（docs/demo.gif） -->
+![Figma 裡的情境稿：訂單頁的四個狀態（從實際跑起來的畫面擷取），加上缺漏檢查找到的兩個沒人處理的狀態](assets/orders-board.png)
+
+<sub>用 [`examples/orders-demo`](examples/orders-demo) 做出來的：從程式碼找到四個狀態，另外標出兩個缺漏，並附上依據的那一行程式。</sub>
+
+<!-- TODO：30–45 秒的展示影片：repo → agent 給出狀態矩陣 → Figma 出現情境稿 -->
 
 一個功能的狀態，遠比設計稿畫的多：載入中、沒有資料、載入失敗、沒有權限、名字太長塞不下、逾期的標示。工程師在程式裡碰到，設計師到了 QA 才知道。這個 plugin 讀功能的程式碼，列出它所有會發生的狀態，並做一次**缺漏檢查**，找出沒人處理的狀態；再用真的跑起來的畫面，在 Figma 逐一重建，全部攤在同一張情境稿上。
 
@@ -56,6 +60,10 @@
 ```text
 從 github.com/byby325/figma-state-board 安裝 figma-state-board plugin（marketplace 叫 figma-state-board，plugin 也叫 figma-state-board），裝好後提醒我重開 session。
 ```
+
+### 用範例專案試
+
+手邊沒有專案？[`examples/orders-demo`](examples/orders-demo) 是一個小的 React 訂單頁，有四個狀態和兩個沒處理的狀態。clone 這個 repo，在那個資料夾跑 `npm install` 和 `npm run dev`，再用它 README 裡的指令。
 
 ### 不用 Figma 也能先試
 

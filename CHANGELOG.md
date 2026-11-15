@@ -18,6 +18,11 @@
 - The screens were built into slots that first held browser screenshots, so upgrading a Route C card to editable layers is verified too. `al-build.js` now drops "(browser screenshot)" from the slot's layer name when it does
 - `audit-screens.js` no longer counts an icon's frame (only vector shapes inside) as a container without Auto Layout; a screen with a few icons was flagged for a low Auto Layout ratio
 
+### Demo app and README pictures
+
+- New `examples/orders-demo`: the React orders page used for the runs above, with a mock API in the dev server (`?state=empty|loading|error`), a capture config for its four states, and prompts to try the plugin on it
+- The READMEs show the board built from the demo and one of its gap cards
+
 ### Tests
 
 - `board-skeleton.test.cjs`: 16 cases (was 13), adding empty slots in the audit and screenshot slots on English and zh-TW boards

@@ -11,7 +11,11 @@
 
 English · [繁體中文](README.zh-TW.md)
 
-<!-- TODO: 30–45 s demo — repo → agent shows the state matrix → Figma board with blue/orange gap labels (docs/demo.gif) -->
+![A state board in Figma: four states of an orders page captured from the running app, and a gap check with two states nobody handled](assets/orders-board.png)
+
+<sub>Built from [`examples/orders-demo`](examples/orders-demo): four states found in the code, and two gaps flagged with the line that shows why.</sub>
+
+<!-- TODO: 30–45 s demo video — repo → agent shows the state matrix → the board appears in Figma -->
 
 A feature has many more states than its mockups show: loading, empty, failed, no permission, a name too long for its box, an overdue badge. Engineers meet them in code; designers find out in QA. This plugin reads the feature's code, lists every state it can be in, and runs a **gap check** for the ones nobody handled. Then it rebuilds each state in Figma from the real running app and lays them all out on one board.
 
@@ -32,6 +36,8 @@ Works with **React** (including Next.js Server Components) and **Vue** apps.
 | `figma-state-board` | The whole flow: inventory → board skeleton → screens → gap check → audit | You want the full state board |
 | `figma-library-binding` | Binds the result to your design system: tokens only on exact matches, library icons and components, unmatched values listed for a designer | Your Figma has a published library |
 
+![A gap card: what the screen must show, the line of code it is based on, and the cards it affects](assets/orders-gap-card.png)
+
 Each card on the board says **trigger; result** ("API returns 403; lock icon, explanation and a back link"), so designers, engineers, QA and PMs read the same list. Gap cards are wireframes that say what the screen must explain and **why it's flagged**, with a file and line number.
 
 ## Quick start
@@ -50,6 +56,10 @@ Each card on the board says **trigger; result** ("API returns 403; lock icon, ex
 ```text
 Install the figma-state-board plugin from github.com/byby325/figma-state-board (marketplace "figma-state-board", plugin "figma-state-board"), then tell me to restart the session.
 ```
+
+### Try it on the demo app
+
+No project at hand? [`examples/orders-demo`](examples/orders-demo) is a small React orders page with four states and two unhandled ones. Clone the repo, run `npm install` and `npm run dev` in that folder, and use the prompts in its README.
 
 ### Try it without Figma
 
