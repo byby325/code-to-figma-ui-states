@@ -2,6 +2,10 @@
 
 ## 0.8.0
 
+### Renamed to figma-ui-states
+
+- The plugin, marketplace and repository are now `figma-ui-states`: "UI states" says what it covers without explanation. The four skills keep their names, so `figma-state-board` is still the skill that builds the board. Install with `/plugin install figma-ui-states@figma-ui-states`
+
 ### State boards on a small call budget
 
 - New Route C for `figma-state-board`: each Prototype card shows a browser screenshot of the running app instead of rebuilt layers. The whole board takes about 3 counted Figma MCP calls however many cards it has, so it fits the 20 calls a month of Starter plans and View/Collab seats. The gap check, wireframes and audit are unchanged, and any card can be rebuilt as editable layers later

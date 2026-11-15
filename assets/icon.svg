@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <!-- figma-state-board icon: a state board of screens, one of them a dashed "gap check" card -->
+  <!-- figma-ui-states icon: a state board of screens, one of them a dashed "gap check" card -->
   <rect width="1024" height="1024" rx="224" fill="#26304C"/>
   <g transform="translate(152 212)">
     <!-- row 1 -->

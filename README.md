@@ -1,10 +1,10 @@
-<p align="center"><img src="assets/icon.png" width="96" alt="figma-state-board"></p>
+<p align="center"><img src="assets/icon.png" width="96" alt="figma-ui-states"></p>
 
-# figma-state-board
+# figma-ui-states
 
 **Find the error, empty and loading screens your prototype forgot, then see every state of the feature on one Figma canvas.**
 
-[![test](https://github.com/byby325/figma-state-board/actions/workflows/test.yml/badge.svg)](https://github.com/byby325/figma-state-board/actions/workflows/test.yml)
+[![test](https://github.com/byby325/figma-ui-states/actions/workflows/test.yml/badge.svg)](https://github.com/byby325/figma-ui-states/actions/workflows/test.yml)
 [![version](https://img.shields.io/badge/version-0.8.0-informational)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![works with Claude Code | Codex](https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex-D97757)
@@ -45,16 +45,16 @@ Each card on the board says **trigger; result** ("API returns 403; lock icon, ex
 **Claude Code**
 
 ```text
-/plugin marketplace add byby325/figma-state-board
-/plugin install figma-state-board@figma-state-board
+/plugin marketplace add byby325/figma-ui-states
+/plugin install figma-ui-states@figma-ui-states
 ```
 
-**Codex**: run `/plugins`, add the `byby325/figma-state-board` marketplace, install `figma-state-board`.
+**Codex**: run `/plugins`, add the `byby325/figma-ui-states` marketplace, install `figma-ui-states`.
 
 **Or paste this into your agent:**
 
 ```text
-Install the figma-state-board plugin from github.com/byby325/figma-state-board (marketplace "figma-state-board", plugin "figma-state-board"), then tell me to restart the session.
+Install the figma-ui-states plugin from github.com/byby325/figma-ui-states (marketplace "figma-ui-states", plugin "figma-ui-states"), then tell me to restart the session.
 ```
 
 ### Try it on the demo app

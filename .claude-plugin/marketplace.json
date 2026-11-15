@@ -1,12 +1,12 @@
 {
-  "name": "figma-state-board",
+  "name": "figma-ui-states",
   "description": "Turn any web feature into a Figma state board: every UI state rebuilt as editable layers, plus a gap check for missing error, empty and loading screens.",
   "owner": {
     "name": "Dilly Chen"
   },
   "plugins": [
     {
-      "name": "figma-state-board",
+      "name": "figma-ui-states",
       "source": "./",
       "description": "Inventory feature states, rebuild web screens as editable Figma layers, and flag missing screens on a state board."
     }

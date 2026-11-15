@@ -20,5 +20,5 @@
     "tailwindcss": "4.3.3",
     "vite": "8.3.5"
   },
-  "description": "Demo app for figma-state-board: an orders page with four states"
+  "description": "Demo app for figma-ui-states: an orders page with four states"
 }

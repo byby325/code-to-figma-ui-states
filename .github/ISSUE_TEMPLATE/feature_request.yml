@@ -1,0 +1,20 @@
+name: Feature request
+description: A framework, a kind of state, or a workflow you want supported
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do
+      description: The situation, not the solution. What did you have to do by hand?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help
+  - type: input
+    id: stack
+    attributes:
+      label: Project stack, if it matters
+      placeholder: Svelte 5, Angular 19, …

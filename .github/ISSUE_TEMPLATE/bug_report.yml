@@ -1,0 +1,44 @@
+name: Bug report
+description: The Figma result doesn't match the browser, a script fails, or a skill does the wrong thing
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check `skills/code-to-figma/references/troubleshooting.md` first; many symptoms are listed there with their cause.
+        Never paste real customer data, access tokens or private Figma links.
+  - type: dropdown
+    id: skill
+    attributes:
+      label: Which skill
+      options: [figma-state-board, state-discovery, code-to-figma, figma-library-binding, not sure]
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you asked for, what you got, and what you expected. Screenshots of the browser and of Figma side by side help most.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce
+      description: The smallest page or component that shows it. If it happens on examples/orders-demo, say which state.
+  - type: input
+    id: stack
+    attributes:
+      label: Project stack
+      placeholder: React 19 + Vite + Tailwind 4, Vue 3 + Nuxt, …
+  - type: input
+    id: version
+    attributes:
+      label: Plugin version and agent
+      placeholder: 0.8.0, Claude Code
+  - type: textarea
+    id: output
+    attributes:
+      label: Script output
+      description: The relevant part of stats.json, the `log` returned by the build, or the audit `issues`.
+      render: json

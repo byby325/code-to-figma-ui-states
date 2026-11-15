@@ -1,11 +1,11 @@
 # Orders demo
 
-A small React app to try figma-state-board on: one orders page with four states (loaded, empty, loading, load failed) and a couple of states nobody handled yet. Vite, React 19, Radix, lucide-react and Tailwind 4. There is no backend: the dev server answers `/api/orders` itself.
+A small React app to try figma-ui-states on: one orders page with four states (loaded, empty, loading, load failed) and a couple of states nobody handled yet. Vite, React 19, Radix, lucide-react and Tailwind 4. There is no backend: the dev server answers `/api/orders` itself.
 
 ## Run it
 
 ```bash
-git clone https://github.com/byby325/figma-state-board && cd figma-state-board/examples/orders-demo
+git clone https://github.com/byby325/figma-ui-states && cd figma-ui-states/examples/orders-demo
 ```
 
 ```bash
