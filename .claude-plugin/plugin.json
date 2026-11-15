@@ -1,5 +1,5 @@
 {
-  "name": "figma-ui-states",
+  "name": "code-to-figma-ui-states",
   "version": "0.8.0",
   "description": "Figma toolkit for product projects: inventory every state of a feature, rebuild running web screens as editable Auto Layout and components, bind them to a design system, and assemble a state board that flags missing error, empty and loading screens.",
   "author": {
@@ -23,7 +23,7 @@
     "情境稿"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/byby325/figma-ui-states",
-  "repository": "https://github.com/byby325/figma-ui-states",
+  "homepage": "https://github.com/byby325/code-to-figma-ui-states",
+  "repository": "https://github.com/byby325/code-to-figma-ui-states",
   "icon": "assets/icon.png"
 }
